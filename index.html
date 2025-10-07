@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to AJ World - Mock Tests</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  body{background:#f0f8ff; font-family:'Segoe UI',sans-serif;}
+  .carousel-caption{background:rgba(0,0,0,0.5); border-radius:10px;}
+  .mock-links a{display:block; margin:10px 0; font-size:1.1rem; padding:10px; background:#0d6efd; color:white; border-radius:8px; text-decoration:none; text-align:center;}
+  .mock-links a:hover{background:#0b5ed7; text-decoration:none;}
+</style>
+</head>
+<body>
+
+<!-- Header / Carousel -->
+<div id="motivationalCarousel" class="carousel slide" data-bs-ride="carousel">
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="https://source.unsplash.com/1200x400/?motivation,success" class="d-block w-100" alt="Slide 1">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Welcome to AJ World</h5>
+        <p>Challenge yourself with UIDAI Mock Tests!</p>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <img src="https://source.unsplash.com/1200x400/?study,focus" class="d-block w-100" alt="Slide 2">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Learn & Grow</h5>
+        <p>Sharpen your knowledge with practice tests.</p>
+      </div>
+    </div>
+    <div class="carousel-item">
+      <img src="https://source.unsplash.com/1200x400/?success,goal" class="d-block w-100" alt="Slide 3">
+      <div class="carousel-caption d-none d-md-block">
+        <h5>Stay Motivated</h5>
+        <p>Every test is a step closer to success!</p>
+      </div>
+    </div>
+  </div>
+  <button class="carousel-control-prev" type="button" data-bs-target="#motivationalCarousel" data-bs-slide="prev">
+    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Previous</span>
+  </button>
+  <button class="carousel-control-next" type="button" data-bs-target="#motivationalCarousel" data-bs-slide="next">
+    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    <span class="visually-hidden">Next</span>
+  </button>
+</div>
+
+<!-- Mock Test Links -->
+<div class="container my-5">
+  <h2 class="text-center mb-4">Available Mock Tests</h2>
+  <div class="mock-links" id="mockLinks">
+    <!-- Links will be generated automatically -->
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  const totalTests = 20;
+  const mockLinksContainer = document.getElementById('mockLinks');
+
+  for(let i=1; i<=totalTests; i++){
+    const link = document.createElement('a');
+    const fileName = `mocktest${i}.html`;
+    link.textContent = `MOCK TEST ${i}`;
+    link.target = '_blank';
+
+    // Check if the file exists
+    fetch(fileName, { method: 'HEAD' })
+      .then(res => {
+        if(res.ok){
+          link.href = fileName;
+        }else{
+          link.href = 'mocktest-not-ready.html';
+        }
+      })
+      .catch(err => {
+        link.href = 'mocktest-not-ready.html';
+      });
+
+    mockLinksContainer.appendChild(link);
+  }
+</script>
+</body>
+</html>
