@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UIDAI Operator Mock Test — Bootstrap 5</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        background: #f6f8fb;
+      }
+      .card-question {
+        border-radius: 12px;
+      }
+      .label-opt.correct {
+        background: #e6f4ea;
+        border-left: 4px solid #2f9d5c;
+      }
+      .label-opt.wrong {
+        background: #fff1f0;
+        border-left: 4px solid #d9534f;
+      }
+      .label-opt.disabled {
+        opacity: 0.75;
+      }
+      .timer-badge {
+        font-weight: 700;
+      }
+      @media (max-width: 575px) {
+        .btn-finish {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+      <div class="container">
+        <a class="navbar-brand fw-bold" href="#">UIDAI Mock Test</a>
+        <div class="d-flex align-items-center">
+          <div class="me-3 text-end">
+            <div class="small text-muted">Time left</div>
+            <div class="badge bg-primary text-white timer-badge" id="timer">
+              60:00
+            </div>
+          </div>
+          <button class="btn btn-outline-secondary" id="btnReset">Reset</button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <div class="row">
+        <div class="col-lg-9">
+          <div class="card mb-3">
+            <div class="card-body">
+              <h5 class="card-title">
+                UIDAI Operator — 50 Questions (Immediate feedback)
+              </h5>
+              <p class="card-text text-muted">
+                Answer each question. Feedback appears immediately. The timer
+                will auto-submit when it reaches zero.
+              </p>
+              <div class="progress mt-3" style="height: 12px">
+                <div
+                  id="progressBar"
+                  class="progress-bar bg-info"
+                  role="progressbar"
+                  style="width: 0%"
+                ></div>
+              </div>
+            </div>
+          </div>
+
+          <form id="quizForm">
+            <div id="questions"></div>
+
+            <div class="d-flex gap-2 my-3">
+              <button
+                type="button"
+                class="btn btn-primary btn-finish"
+                id="finishBtn"
+              >
+                Finish & Submit
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                id="scrollTop"
+              >
+                Go to Top
+              </button>
+            </div>
+          </form>
+
+          <div id="finalResult"></div>
+        </div>
+
+        <aside class="col-lg-3">
+          <div class="card sticky-top" style="top: 20px">
+            <div class="card-body">
+              <h6 class="card-title">Progress</h6>
+              <p class="mb-1 small text-muted">Answered</p>
+              <div
+                class="d-flex justify-content-between align-items-center mb-2"
+              >
+                <div><strong id="answeredCount">0</strong> / 50</div>
+                <div><strong id="scoreMini">0</strong></div>
+              </div>
+              <hr />
+              <div class="small text-muted">Instructions</div>
+              <ul class="small">
+                <li>Immediate feedback after selecting an option.</li>
+                <li>Auto-scrolls to next unanswered question.</li>
+                <li>Do not share real Aadhaar numbers or OTPs.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mt-3 text-center small text-muted">
+            Made for practice — not an official UIDAI exam.
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Timer
+      let totalSeconds = 3600;
+      const timerEl = document.getElementById("timer");
+      let timerInterval = setInterval(() => {
+        totalSeconds--;
+        if (totalSeconds < 0) {
+          clearInterval(timerInterval);
+          autoSubmit();
+          return;
+        }
+        const m = String(Math.floor(totalSeconds / 60)).padStart(2, "0");
+        const s = String(totalSeconds % 60).padStart(2, "0");
+        timerEl.textContent = `${m}:${s}`;
+      }, 1000);
+
+      // Questions array (50) - same moderate UIDAI operator questions
+      const questions = [
+        {
+          id: 1,
+          type: "mcq",
+          question: "What is the primary role of UIDAI?",
+          options: [
+            "Issue passports",
+            "Manage Aadhaar enrolment and authentication",
+            "Collect taxes",
+            "Issue driving licenses",
+          ],
+          answer: 1,
+          explanation:
+            "UIDAI (Unique Identification Authority of India) manages Aadhaar enrolment, issuance and authentication services.",
+        },
+        {
+          id: 2,
+          type: "mcq",
+          question: "How many digits are there in an Aadhaar number?",
+          options: ["10", "12", "15", "9"],
+          answer: 1,
+          explanation: "Aadhaar is a 12-digit unique identity number.",
+        },
+        {
+          id: 3,
+          type: "tf",
+          question: "Aadhaar is proof of citizenship. (True/False)",
+          answer: false,
+          explanation:
+            "Aadhaar proves identity and residence; it is not proof of citizenship.",
+        },
+        {
+          id: 4,
+          type: "mcq",
+          question:
+            "Which biometric data is captured during Aadhaar enrolment?",
+          options: [
+            "Fingerprints and iris",
+            "Voice only",
+            "DNA sample",
+            "Retina without fingerprint",
+          ],
+          answer: 0,
+          explanation:
+            "Enrolment captures fingerprints, iris and a photograph.",
+        },
+        {
+          id: 5,
+          type: "mcq",
+          question: "What is e-Aadhaar?",
+          options: [
+            "A physical card",
+            "A downloadable PDF of Aadhaar",
+            "Temporary enrolment slip",
+            "Government-only view",
+          ],
+          answer: 1,
+          explanation:
+            "e-Aadhaar is a digitally signed PDF copy of the Aadhaar card.",
+        },
+        {
+          id: 6,
+          type: "mcq",
+          question: "Which identifier can be used to download e-Aadhaar?",
+          options: [
+            "Aadhaar number or Enrollment ID (EID)",
+            "PAN only",
+            "Voter ID only",
+            "Passport only",
+          ],
+          answer: 0,
+          explanation:
+            "You can use Aadhaar number or EID with OTP sent to registered mobile.",
+        },
+        {
+          id: 7,
+          type: "tf",
+          question:
+            "Masked Aadhaar displays only the last 4 digits. (True/False)",
+          answer: true,
+          explanation: "Masked Aadhaar hides all but the last 4 digits.",
+        },
+        {
+          id: 8,
+          type: "mcq",
+          question: "What is the purpose of Aadhaar authentication?",
+          options: [
+            "Verify identity",
+            "Change bank details",
+            "Issue passport",
+            "Register vehicles",
+          ],
+          answer: 0,
+          explanation:
+            "Authentication is to verify identity remotely via OTP/biometrics.",
+        },
+        {
+          id: 9,
+          type: "mcq",
+          question: "Which of the following is NOT an authentication mode?",
+          options: [
+            "Biometric",
+            "OTP",
+            "Demographic with consent",
+            "Fingerprintless authentication without consent",
+          ],
+          answer: 3,
+          explanation:
+            "Authentication requires proper modes and consent; unauthorized methods are invalid.",
+        },
+        {
+          id: 10,
+          type: "mcq",
+          question: "What does EID stand for?",
+          options: [
+            "Electronic ID",
+            "Enrollment ID",
+            "Emergency ID",
+            "External ID",
+          ],
+          answer: 1,
+          explanation: "EID is the Enrollment ID provided at enrolment.",
+        },
+        {
+          id: 11,
+          type: "mcq",
+          question:
+            "If biometrics fail due to worn fingerprints, operator should:",
+          options: [
+            "Update biometrics at a centre",
+            "Change Aadhaar number",
+            "Use someone else",
+            "Do nothing",
+          ],
+          answer: 0,
+          explanation:
+            "Residents can update biometrics at an enrolment/update centre or use alternate authentication like OTP.",
+        },
+        {
+          id: 12,
+          type: "tf",
+          question:
+            "UIDAI logs every authentication attempt and residents can view it. (True/False)",
+          answer: true,
+          explanation:
+            "Residents can view authentication history via UIDAI for transparency.",
+        },
+        {
+          id: 13,
+          type: "mcq",
+          question: "Which is NOT accepted as ID for Aadhaar?",
+          options: ["Passport", "Movie ticket", "Driving licence", "Voter ID"],
+          answer: 1,
+          explanation: "Official documents are accepted; movie ticket is not.",
+        },
+        {
+          id: 14,
+          type: "mcq",
+          question: "Which allows offline Aadhaar verification?",
+          options: [
+            "Scanning Aadhaar QR",
+            "Posting on social media",
+            "Phone call",
+            "SMS to unknown",
+          ],
+          answer: 0,
+          explanation:
+            "e-Aadhaar QR contains digitally signed demographic data for offline verification.",
+        },
+        {
+          id: 15,
+          type: "mcq",
+          question: "Online address update requires:",
+          options: [
+            "OTP to registered mobile",
+            "No verification",
+            "Selfie only",
+            "Police report",
+          ],
+          answer: 0,
+          explanation:
+            "Address update via UIDAI portal often needs OTP to registered mobile and supporting documents.",
+        },
+        {
+          id: 16,
+          type: "tf",
+          question:
+            "Residents can lock their biometrics to prevent misuse. (True/False)",
+          answer: true,
+          explanation: "UIDAI provides biometric lock/unlock services.",
+        },
+        {
+          id: 17,
+          type: "mcq",
+          question: "If you suspect Aadhaar misuse you should contact:",
+          options: [
+            "UIDAI helpline / police",
+            "Unknown caller",
+            "Social media",
+            "Ignore",
+          ],
+          answer: 0,
+          explanation: "Report to UIDAI and local authorities.",
+        },
+        {
+          id: 18,
+          type: "mcq",
+          question: "Common UIDAI helpline format is:",
+          options: ["1800-300-1947", "100", "911", "0800-000-0000"],
+          answer: 0,
+          explanation:
+            "UIDAI helpline often referenced as 1800-300-1947; verify on official site.",
+        },
+        {
+          id: 19,
+          type: "mcq",
+          question: "Aadhaar-PAN linking is used for:",
+          options: [
+            "Tax purposes",
+            "Opening bank accounts only",
+            "Passport issuance",
+            "Voter registration",
+          ],
+          answer: 0,
+          explanation:
+            "Linking aids tax department in identity matching and reducing fraud.",
+        },
+        {
+          id: 20,
+          type: "tf",
+          question: "Demographic updates never need documents. (True/False)",
+          answer: false,
+          explanation: "Many updates require supporting documents.",
+        },
+        {
+          id: 21,
+          type: "mcq",
+          question: "Secure way to share Aadhaar:",
+          options: [
+            "Masked Aadhaar",
+            "Post full number",
+            "Share OTP publicly",
+            "Save unencrypted",
+          ],
+          answer: 0,
+          explanation: "Masking protects privacy; never share OTPs.",
+        },
+        {
+          id: 22,
+          type: "mcq",
+          question: "Before capturing biometrics, operator must:",
+          options: [
+            "Obtain consent and ensure device readiness",
+            "Proceed without consent",
+            "Ask for OTP from others",
+            "Share data publicly",
+          ],
+          answer: 0,
+          explanation: "Consent and device calibration are mandatory.",
+        },
+        {
+          id: 23,
+          type: "tf",
+          question: "Operators can store biometric data locally. (True/False)",
+          answer: false,
+          explanation:
+            "Local storage of biometrics by operators is prohibited.",
+        },
+        {
+          id: 24,
+          type: "mcq",
+          question: "Valid reason to update Aadhaar:",
+          options: [
+            "Change of address",
+            "Change of favorite color",
+            "New phone model",
+            "Change of TV channel",
+          ],
+          answer: 0,
+          explanation: "Change of address is legitimate.",
+        },
+        {
+          id: 25,
+          type: "mcq",
+          question: "Authentication consent means:",
+          options: [
+            "Resident allows Aadhaar use for specific transaction",
+            "Consent for all future uses",
+            "No need to inform resident",
+            "Automatic data sharing",
+          ],
+          answer: 0,
+          explanation:
+            "Consent is specific and must be obtained for the transaction.",
+        },
+        {
+          id: 26,
+          type: "tf",
+          question: "Aadhaar can be used as website password. (True/False)",
+          answer: false,
+          explanation: "Aadhaar should never be used as passwords.",
+        },
+        {
+          id: 27,
+          type: "mcq",
+          question: "What protects data during authentication?",
+          options: [
+            "Encryption & digital signatures",
+            "Plain HTTP",
+            "Public forums",
+            "Unencrypted email",
+          ],
+          answer: 0,
+          explanation: "Secure transmission uses encryption and signatures.",
+        },
+        {
+          id: 28,
+          type: "mcq",
+          question: "If the resident has no mobile, operator should:",
+          options: [
+            "Use permitted alternate procedures",
+            "Use neighbor mobile without consent",
+            "Cancel enrolment",
+            "Record OTP publicly",
+          ],
+          answer: 0,
+          explanation:
+            "Operators follow UIDAI alternate procedures, not use others' devices without consent.",
+        },
+        {
+          id: 29,
+          type: "tf",
+          question: "Enrollment centres must verify originals. (True/False)",
+          answer: true,
+          explanation: "Original documents must be verified as per UIDAI SOPs.",
+        },
+        {
+          id: 30,
+          type: "mcq",
+          question: "Which is NOT demographic in Aadhaar?",
+          options: ["Blood group", "Name", "Address", "DOB"],
+          answer: 0,
+          explanation:
+            "Blood group is not part of standard Aadhaar demographics.",
+        },
+
+        {
+          id: 31,
+          type: "mcq",
+          question: "For name correction operator should:",
+          options: [
+            "Initiate update with supporting docs",
+            "Refuse",
+            "Change without docs",
+            "Ask for payment",
+          ],
+          answer: 0,
+          explanation: "Valid documents are required for corrections.",
+        },
+        {
+          id: 32,
+          type: "tf",
+          question:
+            "Operators allowed to photograph documents and share externally. (True/False)",
+          answer: false,
+          explanation:
+            "Sharing documents externally without authorization is prohibited.",
+        },
+        {
+          id: 33,
+          type: "mcq",
+          question: "To confirm enrolment status operator uses:",
+          options: [
+            "UIDAI portal with EID",
+            "Guesswork",
+            "Phone call only",
+            "No check",
+          ],
+          answer: 0,
+          explanation: "EID on UIDAI portal helps check status.",
+        },
+        {
+          id: 34,
+          type: "mcq",
+          question: "Authentication history used for:",
+          options: [
+            "Tracking usage",
+            "Changing Aadhaar",
+            "Deleting records",
+            "Registering vehicles",
+          ],
+          answer: 0,
+          explanation: "It helps residents track where Aadhaar was used.",
+        },
+        {
+          id: 35,
+          type: "tf",
+          question:
+            "Operators can reuse biometrics for any purpose. (True/False)",
+          answer: false,
+          explanation: "Biometrics are for declared purpose only.",
+        },
+        {
+          id: 36,
+          type: "mcq",
+          question: "After enrolment operator must:",
+          options: [
+            "Provide enrolment acknowledgment with EID",
+            "Dispose slip",
+            "Share data publicly",
+            "Store extra copies",
+          ],
+          answer: 0,
+          explanation: "Provide acknowledgment slip to resident.",
+        },
+        {
+          id: 37,
+          type: "mcq",
+          question: "Common reason for auth failure:",
+          options: [
+            "Poor capture or network issues",
+            "Wrong name length",
+            "Wearing glasses",
+            "Operator password",
+          ],
+          answer: 0,
+          explanation: "Capture quality and connectivity often cause failures.",
+        },
+        {
+          id: 38,
+          type: "tf",
+          question:
+            "Residents can lock their Aadhaar number entirely. (True/False)",
+          answer: false,
+          explanation:
+            "Residents can lock biometrics; full-number lock differs—check UIDAI services.",
+        },
+        {
+          id: 39,
+          type: "mcq",
+          question: "Best practice for operators:",
+          options: [
+            "Obtain consent and not store data",
+            "Store on public drive",
+            "Share OTPs",
+            "Post data online",
+          ],
+          answer: 0,
+          explanation: "Consent and no retention are best practices.",
+        },
+        {
+          id: 40,
+          type: "mcq",
+          question: "QR on e-Aadhaar is used to:",
+          options: [
+            "Quickly verify demographic info",
+            "Encrypt biometrics",
+            "Make payments",
+            "Replace OTP",
+          ],
+          answer: 0,
+          explanation: "QR contains digitally signed demographic data.",
+        },
+        {
+          id: 41,
+          type: "mcq",
+          question: "To update mobile in Aadhaar one needs:",
+          options: [
+            "UIDAI verification",
+            "Just telling operator",
+            "Posting on social media",
+            "SMS to random",
+          ],
+          answer: 0,
+          explanation: "Mobile updates require proper UIDAI verification.",
+        },
+        {
+          id: 42,
+          type: "tf",
+          question: "Aadhaar can be used for KYC with consent. (True/False)",
+          answer: true,
+          explanation: "e-KYC with consent is used for KYC processes.",
+        },
+        {
+          id: 43,
+          type: "mcq",
+          question: "Authentication logs typically include:",
+          options: [
+            "Time, requester & purpose",
+            "Passwords",
+            "Operator personal data",
+            "Deleted records only",
+          ],
+          answer: 0,
+          explanation: "Logs include time, requesting agency and purpose.",
+        },
+        {
+          id: 44,
+          type: "mcq",
+          question: "If enrolment slip lost resident should:",
+          options: [
+            "Download e-Aadhaar via UIDAI using Aadhaar/EID & OTP",
+            "Forget it",
+            "Post on forums",
+            "Call random numbers",
+          ],
+          answer: 0,
+          explanation:
+            "Residents can download e-Aadhaar using Aadhaar/EID and OTP.",
+        },
+        {
+          id: 45,
+          type: "tf",
+          question:
+            "Operator must explain purpose before authentication. (True/False)",
+          answer: true,
+          explanation: "Explaining purpose and obtaining consent is mandatory.",
+        },
+        {
+          id: 46,
+          type: "mcq",
+          question: "Which update needs identity proof?",
+          options: [
+            "Name/DOB correction",
+            "New ringtone",
+            "TV subscription",
+            "Favorite color",
+          ],
+          answer: 0,
+          explanation: "Name/DOB corrections need supporting identity proofs.",
+        },
+        {
+          id: 47,
+          type: "mcq",
+          question: "If network is down operator should:",
+          options: [
+            "Inform resident and reschedule",
+            "Store data insecurely",
+            "Proceed offline without SOP",
+            "Cancel silently",
+          ],
+          answer: 0,
+          explanation:
+            "Follow SOPs—inform resident and reschedule or use permitted procedures.",
+        },
+        {
+          id: 48,
+          type: "tf",
+          question:
+            "Operators may ask residents to give OTP to unknown callers. (True/False)",
+          answer: false,
+          explanation:
+            "Never share OTPs; operators must protect OTP confidentiality.",
+        },
+        {
+          id: 49,
+          type: "mcq",
+          question: "Privacy protection measures include:",
+          options: [
+            "Mask Aadhaar, biometric lock, secure channels",
+            "Share OTP",
+            "Save in plaintext",
+            "Upload to random cloud",
+          ],
+          answer: 0,
+          explanation: "Mask Aadhaar, lock biometrics and use secure channels.",
+        },
+        {
+          id: 50,
+          type: "tf",
+          question:
+            "UIDAI allows limited online updates with document upload. (True/False)",
+          answer: true,
+          explanation:
+            "Some updates are available online; others require documents or centre visit.",
+        },
+      ];
+
+      // Render questions
+      const qContainer = document.getElementById("questions");
+      let answered = 0;
+      let score = 0;
+      const total = questions.length;
+      const progressBar = document.getElementById("progressBar");
+      const answeredCount = document.getElementById("answeredCount");
+      const scoreMini = document.getElementById("scoreMini");
+
+      questions.forEach((q, idx) => {
+        const card = document.createElement("div");
+        card.className = "card mb-3 card-question";
+        card.id = "q" + q.id;
+        const body = document.createElement("div");
+        body.className = "card-body";
+        let html = `<h6 class="card-subtitle mb-2">${idx + 1}. ${
+          q.question
+        }</h6>`;
+        html += '<div class="list-group">';
+        if (q.type === "mcq") {
+          q.options.forEach((opt, i) => {
+            html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="${i}"> <div>${opt}</div></label>`;
+          });
+        } else {
+          html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="true"> <div>True</div></label>`;
+          html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="false"> <div>False</div></label>`;
+        }
+        html += "</div>";
+        html += `<div class="mt-2" id="fb${q.id}" style="display:none"></div>`;
+        body.innerHTML = html;
+        card.appendChild(body);
+        qContainer.appendChild(card);
+      });
+
+      // Event listener for all radio changes
+      qContainer.addEventListener("change", (e) => {
+        const input = e.target;
+        if (input && input.matches("input[type=radio]")) {
+          const label = input.closest("label.label-opt");
+          const qid = parseInt(label.getAttribute("data-qid"), 10);
+          handleAnswer(qid);
+        }
+      });
+
+      function handleAnswer(qid) {
+        const q = questions.find((x) => x.id === qid);
+        if (!q) return;
+        const fb = document.getElementById("fb" + q.id);
+        if (fb.getAttribute("data-answered") === "true") return; // already answered
+        const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+        if (!sel) return;
+        let userText = "";
+        let correct = false;
+        if (q.type === "mcq") {
+          const idx = parseInt(sel.value, 10);
+          userText = q.options[idx];
+          correct = idx === q.answer;
+        } else {
+          const val = sel.value === "true";
+          userText = val ? "True" : "False";
+          correct = val === q.answer;
+        }
+        // mark feedback
+        fb.style.display = "block";
+        fb.innerHTML = `<div class="fw-semibold text-${
+          correct ? "success" : "danger"
+        }">${correct ? "Correct ✓" : "Incorrect ✗"}</div>
+    <div class="small mt-1">Your answer: <strong>${escapeHtml(
+      userText
+    )}</strong></div>
+    <div class="small">Correct answer: <strong>${escapeHtml(
+      q.type === "mcq" ? q.options[q.answer] : q.answer ? "True" : "False"
+    )}</strong></div>
+    <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+        fb.setAttribute("data-answered", "true");
+
+        // style labels and disable inputs
+        const labels = document.querySelectorAll(`#q${q.id} label.label-opt`);
+        labels.forEach((l) => {
+          l.classList.add("disabled");
+        });
+        labels.forEach((l) => {
+          const idxAttr = l.getAttribute("data-idx");
+          const valAttr = l.getAttribute("data-val");
+          if (q.type === "mcq" && idxAttr !== null) {
+            const li = parseInt(idxAttr, 10);
+            if (li === q.answer) l.classList.add("correct");
+            const selIdx = parseInt(
+              document.querySelector(`#q${q.id} input[type=radio]:checked`)
+                .value,
+              10
+            );
+            if (li === selIdx && li !== q.answer) l.classList.add("wrong");
+          }
+          if (q.type === "tf" && valAttr !== null) {
+            const b = valAttr === "true";
+            if (b === q.answer) l.classList.add("correct");
+            if (
+              document.querySelector(`#q${q.id} input[type=radio]:checked`)
+                .value === valAttr &&
+              b !== q.answer
+            )
+              l.classList.add("wrong");
+          }
+        });
+        const inputs = document.querySelectorAll(`#q${q.id} input`);
+        inputs.forEach((i) => (i.disabled = true));
+
+        // update counts
+        answered++;
+        if (correct) score++;
+        updateProgress();
+
+        // auto-scroll
+        setTimeout(() => {
+          const next = findNextUnanswered(q.id);
+          if (next)
+            next.scrollIntoView({ behavior: "smooth", block: "center" });
+          else
+            document
+              .getElementById("finishBtn")
+              .scrollIntoView({ behavior: "smooth" });
+        }, 350);
+      }
+
+      function findNextUnanswered(currentId) {
+        for (const q of questions) {
+          const fb = document.getElementById("fb" + q.id);
+          if (!fb || fb.getAttribute("data-answered") !== "true")
+            return document.getElementById("q" + q.id);
+        }
+        return null;
+      }
+
+      function updateProgress() {
+        const pct = Math.round((answered / total) * 100);
+        progressBar.style.width = pct + "%";
+        answeredCount.textContent = answered;
+        scoreMini.textContent = score;
+      }
+
+      // Finish and auto-submit
+      document
+        .getElementById("finishBtn")
+        .addEventListener("click", finishTest);
+      function finishTest() {
+        clearInterval(timerInterval);
+        // compute final for unanswered as wrong
+        const finalDiv = document.getElementById("finalResult");
+        finalDiv.innerHTML = "";
+        const card = document.createElement("div");
+        card.className = "card mt-3";
+        const body = document.createElement("div");
+        body.className = "card-body";
+        body.innerHTML = `<h5 class="card-title">Final score: ${score} / ${total}</h5><p class="text-muted">Percentage: ${(
+          (score / total) *
+          100
+        ).toFixed(2)}%</p>`;
+        // compact review
+        const review = document.createElement("div");
+        review.className = "mt-2";
+        questions.forEach((q, idx) => {
+          const fb = document.getElementById("fb" + q.id);
+          const answeredFlag =
+            fb && fb.getAttribute("data-answered") === "true";
+          let userText = "No answer";
+          let correct = false;
+          if (answeredFlag) {
+            if (q.type === "mcq") {
+              const sel = document.querySelector(
+                `#q${q.id} input[type=radio]:checked`
+              );
+              const idxSel = sel ? parseInt(sel.value, 10) : null;
+              userText = idxSel !== null ? q.options[idxSel] : "No answer";
+              correct = idxSel === q.answer;
+            } else {
+              const sel = document.querySelector(
+                `#q${q.id} input[type=radio]:checked`
+              );
+              const val = sel ? sel.value === "true" : null;
+              userText = val === null ? "No answer" : val ? "True" : "False";
+              correct = val === q.answer;
+            }
+          }
+          const detail = document.createElement("details");
+          detail.className = "mb-2";
+          detail.innerHTML = `<summary><strong>Q${idx + 1}.</strong> ${
+            q.question
+          } — <span class="text-${correct ? "success" : "danger"}">${
+            correct ? "Correct" : "Incorrect"
+          }</span></summary>
+      <div class="mt-1 small">Your answer: <strong>${escapeHtml(
+        userText
+      )}</strong></div>
+      <div class="small">Correct answer: <strong>${escapeHtml(
+        q.type === "mcq" ? q.options[q.answer] : q.answer ? "True" : "False"
+      )}</strong></div>
+      <div class="mt-1">${escapeHtml(q.explanation)}</div>`;
+          review.appendChild(detail);
+        });
+        body.appendChild(review);
+        card.appendChild(body);
+        finalDiv.appendChild(card);
+        finalDiv.scrollIntoView({ behavior: "smooth" });
+      }
+
+      function autoSubmit() {
+        alert("Time is up — submitting");
+        finishTest();
+      }
+
+      // Scroll to top
+      document.getElementById("scrollTop").addEventListener("click", () => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      });
+      // Reset
+      document.getElementById("btnReset").addEventListener("click", () => {
+        if (confirm("Reset and restart?")) location.reload();
+      });
+
+      function escapeHtml(str) {
+        if (str === null || str === undefined) return "";
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      // init
+      updateProgress();
+    </script>
+  </body>
+</html>
