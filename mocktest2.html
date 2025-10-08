@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>UIDAI Supervisor Mock Test — Bootstrap 5</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <style>
+    body { background: #f6f8fb; }
+    .card-question { border-radius: 12px; }
+    .label-opt.correct { background: #e6f4ea; border-left: 4px solid #2f9d5c; }
+    .label-opt.wrong { background: #fff1f0; border-left: 4px solid #d9534f; }
+    .label-opt.disabled { opacity: 0.75; }
+    .timer-badge { font-weight: 700; }
+    .sticky-progress { top: 20px; z-index: 5; }
+    @media (max-width: 575px) { .btn-finish { width: 100%; } }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="#">UIDAI Supervisor Mock</a>
+    <div class="d-flex align-items-center">
+      <div class="me-3 text-end">
+        <div class="small text-muted">Time left</div>
+        <div class="badge bg-danger text-white timer-badge" id="timer">60:00</div>
+      </div>
+      <button class="btn btn-outline-secondary" id="btnReset">Reset</button>
+    </div>
+  </div>
+</nav>
+
+<main class="container my-4">
+  <div class="row">
+    <div class="col-lg-9">
+      <div class="card mb-3">
+        <div class="card-body">
+          <h5 class="card-title">UIDAI Supervisor — 50 Questions (Immediate feedback)</h5>
+          <p class="card-text text-muted">Supervisor-level questions: enrollment oversight, QC, SOPs, audit, grievance handling and security. Select an option to see instant feedback and explanation. Timer auto-submits at end.</p>
+          <div class="progress mt-3" style="height:12px">
+            <div id="progressBar" class="progress-bar bg-info" role="progressbar" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <form id="quizForm">
+        <div id="questions"></div>
+
+        <div class="d-flex gap-2 my-3">
+          <button type="button" class="btn btn-primary btn-finish" id="finishBtn">Finish & Submit</button>
+          <button type="button" class="btn btn-outline-secondary" id="scrollTop">Go to Top</button>
+        </div>
+      </form>
+
+      <div id="finalResult"></div>
+    </div>
+
+    <aside class="col-lg-3">
+      <div class="card sticky-top sticky-progress">
+        <div class="card-body">
+          <h6 class="card-title">Progress</h6>
+          <p class="mb-1 small text-muted">Answered</p>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div><strong id="answeredCount">0</strong> / 50</div>
+            <div><strong id="scoreMini">0</strong></div>
+          </div>
+          <hr/>
+          <div class="small text-muted">Supervisor Notes</div>
+          <ul class="small">
+            <li>Monitor operators and QC enrolments.</li>
+            <li>Ensure consent & document verification.</li>
+            <li>Follow UIDAI SOPs and data protection rules.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="mt-3 text-center small text-muted">Practice only — not official UIDAI exam.</div>
+    </aside>
+  </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+/* Timer: 60 minutes */
+let totalSeconds = 3600;
+const timerEl = document.getElementById('timer');
+let timerInterval = setInterval(tick, 1000);
+function tick(){
+  totalSeconds--;
+  if(totalSeconds < 0){ clearInterval(timerInterval); autoSubmit(); return; }
+  const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+  const s = String(totalSeconds%60).padStart(2,'0');
+  timerEl.textContent = `${m}:${s}`;
+}
+
+/* UIDAI Supervisor questions (50 items) */
+const questions = [
+  {id:1,type:"mcq",question:"What is the primary responsibility of a UIDAI Supervisor at an enrolment centre?",options:["Capture biometrics only","Oversee operators and ensure SOP compliance","Issue Aadhaar cards personally","Collect fees for enrolment"],answer:1,explanation:"A Supervisor is responsible for overseeing operators, checking SOP adherence, quality control and grievance handling at the centre."},
+  {id:2,type:"mcq",question:"Which document verification step is mandatory before enrolling a resident?",options:["Check original identity/address documents","Ask resident to show social media profile","Accept verbal statements","Skip for convenience"],answer:0,explanation:"Original supporting documents must be verified as per UIDAI guidelines before enrolment."},
+  {id:3,type:"tf",question:"Supervisor must ensure operators obtain explicit consent before authentication. (True/False)",answer:true,explanation:"Consent is mandatory; supervisors must enforce that operators explain purpose and obtain consent."},
+  {id:4,type:"mcq",question:"What should a supervisor do if an operator attempts to store biometric data locally?",options:["Allow and ignore","Report and stop the practice immediately","Encourage it","Share with others"],answer:1,explanation:"Local storage of biometric data by operators is prohibited; supervisor should stop and report such practices."},
+  {id:5,type:"mcq",question:"Which of these is part of QC (quality check) for enrolment data?",options:["Clear photograph and good fingerprint capture","Ignoring demographic errors","Deliberately altering data","Skipping document copy"],answer:0,explanation:"Quality checks include clear photo, good biometric captures and correct demographic data."},
+  {id:6,type:"tf",question:"Supervisor may ask an operator to use another person's mobile for OTP without consent. (True/False)",answer:false,explanation:"Using another person's mobile without resident consent breaches privacy and is not allowed."},
+  {id:7,type:"mcq",question:"If network is down during enrolment, the supervisor should:",options:["Instruct to save data insecurely","Inform resident and follow UIDAI offline SOPs or reschedule","Continue and upload later using USB","Cancel without notice"],answer:1,explanation:"Supervisors should follow UIDAI SOPs: inform resident and either use permitted offline procedures or reschedule."},
+  {id:8,type:"mcq",question:"What is an Enrollment ID (EID)?",options:["Temporary reference during enrolment","Permanent Aadhaar number","Operator ID","Device serial number"],answer:0,explanation:"EID is a temporary enrolment reference printed on the acknowledgement slip; it helps check status until Aadhaar is generated."},
+  {id:9,type:"tf",question:"Supervisor should verify that enrolment slips are given to residents. (True/False)",answer:true,explanation:"Providing the enrolment acknowledgement with EID is mandatory for residents to track status."},
+  {id:10,type:"mcq",question:"Which action is correct if resident requests name correction?",options:["Accept valid supporting documents and initiate update","Refuse without reason","Change without documents","Charge extra fee"],answer:0,explanation:"Name corrections require valid supporting documents and must follow the update process."},
+  {id:11,type:"mcq",question:"During audits, which record is useful for tracing authentication use?",options:["Authentication history/logs","Operator's personal notes","Random social media posts","Unused paper slips"],answer:0,explanation:"Authentication logs record time, requesting agency and purpose; they are used for audits and tracing usage."},
+  {id:12,type:"tf",question:"Supervisor must ensure devices used are UIDAI-certified. (True/False)",answer:true,explanation:"Only UIDAI-certified biometric devices and software should be used for enrolment and authentication."},
+  {id:13,type:"mcq",question:"What is a correct step if an enrolment photo is blurred?",options:["Retake photo to meet quality standards","Use blurred photo anyway","Crop without retaking","Ignore resident complaint"],answer:0,explanation:"Photo should be retaken to ensure quality and correct identification."},
+  {id:14,type:"mcq",question:"Which of the following is part of supervisor's role in grievance handling?",options:["Log complaint and escalate to UIDAI/concerned team","Ignore complaints","Delete complaint records","Respond publicly on social media"],answer:0,explanation:"Supervisor should record grievances, provide acknowledgement and escalate per process."},
+  {id:15,type:"tf",question:"Supervisors can share residents' personal data with third parties for marketing. (True/False)",answer:false,explanation:"Sharing personal Aadhaar data for marketing violates privacy and UIDAI rules."},
+  {id:16,type:"mcq",question:"Which metric indicates operator performance quality?",options:["Percentage of successful enrolments and biometric quality scores","Number of selfies taken","Number of breaks taken","Operator mood"],answer:0,explanation:"Performance is measured via successful enrolment rates, accuracy and biometric quality metrics."},
+  {id:17,type:"mcq",question:"If a resident's fingerprint is unreadable, supervisor should:",options:["Use alternate authentication (OTP) or update biometrics later","Refuse service permanently","Force to try for hours","Record fake fingerprint"],answer:0,explanation:"Use allowed alternate authentication (OTP) or arrange biometric update at a later time following SOPs."},
+  {id:18,type:"tf",question:"Supervisor must ensure all operators use unique login credentials and not share accounts. (True/False)",answer:true,explanation:"Sharing logins violates accountability; supervisors must enforce individual credentials."},
+  {id:19,type:"mcq",question:"What is the correct response to suspected fraudulent documents?",options:["Stop enrolment and escalate to higher authority","Proceed as normal","Accept with a note","Ask resident to come back"],answer:0,explanation:"Suspected fraud must be escalated and enrolment stopped until cleared per procedures."},
+  {id:20,type:"mcq",question:"Which backup practice should supervisor ensure for centre data (where allowed)?",options:["Follow UIDAI-approved backup and retention policies","Copy everything to personal drive","Upload to public cloud without encryption","Print and leave unsecured"],answer:0,explanation:"Any backup must follow UIDAI policies; insecure storage is prohibited."},
+  {id:21,type:"tf",question:"Supervisor should train new operators on SOPs and device handling. (True/False)",answer:true,explanation:"Training and periodic refreshers are essential to maintain quality and compliance."},
+  {id:22,type:"mcq",question:"Which is an important privacy measure in the centre?",options:["Mask Aadhaar when displaying, lock devices, and avoid unnecessary data sharing","Post all Aadhaar numbers on notice board","Share OTPs publicly","Keep backups unencrypted"],answer:0,explanation:"Privacy measures include masking numbers, locking biometrics, and secure handling of data."},
+  {id:23,type:"tf",question:"Supervisor can delegate all grievance decisions to operators without oversight. (True/False)",answer:false,explanation:"Supervisors must oversee grievance resolution; delegation without oversight can lead to mistakes."},
+  {id:24,type:"mcq",question:"Which should supervisor check during daily shift start?",options:["Device connectivity, supplies, operator logins, and acknowledgement slips availability","Only operator attendance","Only electricity status","Only coffee availability"],answer:0,explanation:"Supervisor should verify devices, connectivity, credentials and stationery to ensure smooth operations."},
+  {id:25,type:"mcq",question:"What is the role of biometric lock/unlock feature?",options:["Prevent or allow biometric authentication to avoid misuse","Delete Aadhaar number","Share biometrics","Auto-generate OTPs"],answer:0,explanation:"Biometric lock prevents biometric authentication; supervisors should assist residents to use this feature if needed."},
+  {id:26,type:"tf",question:"Supervisors must ensure logs are reviewed periodically for anomalies. (True/False)",answer:true,explanation:"Regular review of authentication and enrolment logs helps detect misuse or operational issues."},
+  {id:27,type:"mcq",question:"If an enrolment device shows repeated capture errors, supervisor should:",options:["Take device out of service and arrange repair/replacement","Keep using it","Hide errors","Ignore and continue"],answer:0,explanation:"Faulty devices should be taken out of service and replaced or repaired to maintain enrolment quality."},
+  {id:28,type:"mcq",question:"Supervisor responsibilities during audits include:",options:["Providing requested logs, supporting documents and explaining SOPs followed","Hiding records","Refusing auditors","Deleting evidence"],answer:0,explanation:"During audits, supervisors must cooperate and provide accurate records per audit requests."},
+  {id:29,type:"tf",question:"Supervisor can authorize operators to retain resident biometric data locally for analysis. (True/False)",answer:false,explanation:"Local retention of biometric data by operators is not permitted; data handling must follow UIDAI policies."},
+  {id:30,type:"mcq",question:"Which step improves fingerprint capture for elderly residents?",options:["Use alternate fingers, improve scanner lighting and ensure skin is clean","Use same worn finger repeatedly","Force finger with pressure","Refuse service"],answer:0,explanation:"Using alternate fingers and proper capture techniques improves success for elderly residents."},
+  {id:31,type:"mcq",question:"What must supervisor do when a resident requests information about how their Aadhaar is used?",options:["Explain authentication purpose, direct them to UIDAI portal for history","Ignore request","Provide full audit logs verbally","Share operator credentials"],answer:0,explanation:"Supervisors should explain purpose and guide residents to official UIDAI tools for authentication history."},
+  {id:32,type:"tf",question:"Supervisor should periodically change centre passwords and secure access. (True/False)",answer:true,explanation:"Regularly updating credentials and securing access reduces risk of unauthorized use."},
+  {id:33,type:"mcq",question:"Which of these is a correct escalation path for unresolved complaints?",options:["Log complaint, escalate to regional UIDAI support/helpline per process","Solve informally by operator alone","Ignore until resident leaves","Post complaint publicly"],answer:0,explanation:"Complaints should be logged and escalated through formal channels when not resolved locally."},
+  {id:34,type:"mcq",question:"Which training topic is most relevant for supervisors?",options:["SOP compliance, audit readiness, privacy laws and QC checks","How to sell services","How to hack devices","How to avoid reporting"],answer:0,explanation:"Supervisors need training on SOPs, audits, privacy and quality control to supervise effectively."},
+  {id:35,type:"tf",question:"Supervisor should ensure enrolment stations have privacy screens and separate queuing. (True/False)",answer:true,explanation:"Physical privacy (screens, separate queues) helps protect resident data and dignity."},
+  {id:36,type:"mcq",question:"Which metric shows center reliability?",options:["Uptime, average processing time, and error rates","Number of cups of tea","Color of station","Operator height"],answer:0,explanation:"Uptime, processing time and error rates are key operational metrics for reliability."},
+  {id:37,type:"mcq",question:"What should supervisor do if an operator tries to coerce resident to share OTP?",options:["Immediately instruct to stop, record incident and escalate","Encourage coercion","Ignore","Share OTP publicly"],answer:0,explanation:"Coercion to share OTP is fraud; supervisor should stop it and report the incident."},
+  {id:38,type:"tf",question:"Supervisor may allow use of uncertified third-party software for convenience. (True/False)",answer:false,explanation:"Only UIDAI-approved/certified software must be used; uncertified tools risk data integrity and compliance."},
+  {id:39,type:"mcq",question:"Which action helps maintain photo quality at centre?",options:["Regularly clean camera lens and ensure proper lighting","Use lowest resolution to save space","Ignore camera issues","Use filters indiscriminately"],answer:0,explanation:"Cleaning equipment and good lighting ensure high-quality photos for enrolment."},
+  {id:40,type:"mcq",question:"What is the supervisor's role when UIDAI issues an update or new SOP?",options:["Communicate changes, retrain operators and implement new steps","Ignore changes","Delete operators' notes","Delay implementation"],answer:0,explanation:"Supervisors must communicate policy changes and ensure operators are retrained and updated."},
+  {id:41,type:"mcq",question:"Which is true about handling minors' enrolments?",options:["Follow UIDAI rules for child enrolment and update biometrics later as required","Enrol without parent consent","Use child's parent ID only","Issue adult Aadhaar"],answer:0,explanation:"Child enrolment follows specific UIDAI guidelines, often requiring parental consent and later biometric updates."},
+  {id:42,type:"tf",question:"Supervisor should ensure that only authorized staff access enrolment systems. (True/False)",answer:true,explanation:"Access control reduces misuse; supervisors must restrict system access to authorized personnel."},
+  {id:43,type:"mcq",question:"Which step improves data accuracy during data entry?",options:["Double-check demographic fields, use drop-downs and validation rules","Type hurriedly","Skip validation","Accept handwriting only"],answer:0,explanation:"Validation, double-checking and standardized fields reduce data entry errors."},
+  {id:44,type:"mcq",question:"Which of these is a correct way to handle an authentication dispute from a resident?",options:["Log the dispute, collect details, escalate to UIDAI if unresolved","Deny without check","Delete their account","Publish their data"],answer:0,explanation:"Disputes must be logged and escalated per the dispute resolution process."},
+  {id:45,type:"tf",question:"Supervisor should keep a record of daily device maintenance activities. (True/False)",answer:true,explanation:"Maintenance logs help track device health and are useful for audits and troubleshooting."},
+  {id:46,type:"mcq",question:"What is a supervisor's responsibility regarding operator breaks and shifts?",options:["Schedule shifts to maintain service levels while ensuring rest","Never allow breaks","Work operators 24/7","Ignore shift planning"],answer:0,explanation:"Supervisors should manage rosters to maintain service and operator wellbeing."},
+  {id:47,type:"mcq",question:"Which one is an appropriate immediate action for suspected data breach?",options:["Isolate systems, inform higher management and follow incident response plan","Cover up the breach","Share data on emails","Ignore it"],answer:0,explanation:"Isolating systems and following incident response is the correct approach to a suspected breach."},
+  {id:48,type:"tf",question:"Supervisor can directly change the Aadhaar number assigned to a resident. (True/False)",answer:false,explanation:"Aadhaar numbers are issued by UIDAI and cannot be changed by supervisors; only UIDAI processes handle such cases."},
+  {id:49,type:"mcq",question:"When reviewing authentication logs, supervisors should look for:",options:["Unusual frequency, unfamiliar requesters or odd times","Only correct answers","Color of UI","Font size"],answer:0,explanation:"Anomalies such as excessive authentications or unfamiliar requesters can indicate misuse."},
+  {id:50,type:"tf",question:"Supervisors should ensure operators do not ask for or record OTPs from residents. (True/False)",answer:true,explanation:"Operators must not request OTPs from residents; OTPs are private and must not be recorded."}
+];
+
+/* Render questions */
+const qContainer = document.getElementById('questions');
+let answered = 0;
+let score = 0;
+const total = questions.length;
+const progressBar = document.getElementById('progressBar');
+const answeredCount = document.getElementById('answeredCount');
+const scoreMini = document.getElementById('scoreMini');
+
+questions.forEach((q, idx) => {
+  const card = document.createElement('div');
+  card.className = 'card mb-3 card-question';
+  card.id = 'q' + q.id;
+  const body = document.createElement('div');
+  body.className = 'card-body';
+  let html = `<h6 class="card-subtitle mb-2">${idx+1}. ${escapeHtml(q.question)}</h6>`;
+  html += '<div class="list-group">';
+  if (q.type === 'mcq') {
+    q.options.forEach((opt,i) => {
+      html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="${i}"> <div>${escapeHtml(opt)}</div></label>`;
+    });
+  } else {
+    html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="true"> <div>True</div></label>`;
+    html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="false"> <div>False</div></label>`;
+  }
+  html += '</div>';
+  html += `<div class="mt-2" id="fb${q.id}" style="display:none"></div>`;
+  body.innerHTML = html;
+  card.appendChild(body);
+  qContainer.appendChild(card);
+});
+
+/* Event listener for answers */
+qContainer.addEventListener('change', (e) => {
+  const input = e.target;
+  if (input && input.matches('input[type=radio]')) {
+    const label = input.closest('label.label-opt');
+    const qid = parseInt(label.getAttribute('data-qid'), 10);
+    handleAnswer(qid);
+  }
+});
+
+function handleAnswer(qid) {
+  const q = questions.find(x => x.id === qid);
+  if (!q) return;
+  const fb = document.getElementById('fb' + q.id);
+  if (fb.getAttribute('data-answered') === 'true') return;
+  const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+  if (!sel) return;
+  let userText = '';
+  let correct = false;
+  if (q.type === 'mcq') {
+    const idx = parseInt(sel.value, 10);
+    userText = q.options[idx];
+    correct = (idx === q.answer);
+  } else {
+    const val = (sel.value === 'true');
+    userText = val ? 'True' : 'False';
+    correct = (val === q.answer);
+  }
+  fb.style.display = 'block';
+  fb.innerHTML = `<div class="fw-semibold text-${correct ? 'success' : 'danger'}">${correct ? 'Correct ✓' : 'Incorrect ✗'}</div>
+    <div class="small mt-1">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+    <div class="small">Correct answer: <strong>${escapeHtml(q.type === 'mcq' ? q.options[q.answer] : (q.answer ? 'True' : 'False'))}</strong></div>
+    <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+  fb.setAttribute('data-answered','true');
+
+  const labels = document.querySelectorAll(`#q${q.id} label.label-opt`);
+  labels.forEach(l => l.classList.add('disabled'));
+  labels.forEach(l => {
+    const idxAttr = l.getAttribute('data-idx');
+    const valAttr = l.getAttribute('data-val');
+    if (q.type === 'mcq' && idxAttr !== null) {
+      const li = parseInt(idxAttr, 10);
+      if (li === q.answer) l.classList.add('correct');
+      const selIdx = parseInt(document.querySelector(`#q${q.id} input[type=radio]:checked`).value,10);
+      if (li === selIdx && li !== q.answer) l.classList.add('wrong');
+    }
+    if (q.type === 'tf' && valAttr !== null) {
+      const b = (valAttr === 'true');
+      if (b === q.answer) l.classList.add('correct');
+      if (document.querySelector(`#q${q.id} input[type=radio]:checked`).value === valAttr && b !== q.answer) l.classList.add('wrong');
+    }
+  });
+  const inputs = document.querySelectorAll(`#q${q.id} input`);
+  inputs.forEach(i => i.disabled = true);
+
+  answered++;
+  if (correct) score++;
+  updateProgress();
+
+  setTimeout(() => {
+    const next = findNextUnanswered(q.id);
+    if (next) next.scrollIntoView({behavior:'smooth', block:'center'});
+    else document.getElementById('finishBtn').scrollIntoView({behavior:'smooth'});
+  }, 350);
+}
+
+function findNextUnanswered(currentId) {
+  for (const q of questions) {
+    const fb = document.getElementById('fb' + q.id);
+    if (!fb || fb.getAttribute('data-answered') !== 'true') return document.getElementById('q' + q.id);
+  }
+  return null;
+}
+
+function updateProgress() {
+  const pct = Math.round((answered / total) * 100);
+  progressBar.style.width = pct + '%';
+  answeredCount.textContent = answered;
+  scoreMini.textContent = score;
+}
+
+/* Finish & submit */
+document.getElementById('finishBtn').addEventListener('click', finishTest);
+function finishTest(){
+  clearInterval(timerInterval);
+  const finalDiv = document.getElementById('finalResult');
+  finalDiv.innerHTML = '';
+  const card = document.createElement('div');
+  card.className = 'card mt-3';
+  const body = document.createElement('div');
+  body.className = 'card-body';
+  body.innerHTML = `<h5 class="card-title">Final score: ${score} / ${total}</h5><p class="text-muted">Percentage: ${((score/total)*100).toFixed(2)}%</p>`;
+  const review = document.createElement('div');
+  review.className = 'mt-2';
+  questions.forEach((q, idx) => {
+    const fb = document.getElementById('fb'+q.id);
+    const answeredFlag = fb && fb.getAttribute('data-answered') === 'true';
+    let userText = 'No answer';
+    let correct = false;
+    if (answeredFlag) {
+      if (q.type === 'mcq') {
+        const sel = document.querySelector(`#q${q.id} input[type=radio]:checked`);
+        const idxSel = sel ? parseInt(sel.value,10) : null;
+        userText = idxSel !== null ? q.options[idxSel] : 'No answer';
+        correct = (idxSel === q.answer);
+      } else {
+        const sel = document.querySelector(`#q${q.id} input[type=radio]:checked`);
+        const val = sel ? (sel.value === 'true') : null;
+        userText = val===null? 'No answer' : (val? 'True':'False');
+        correct = (val === q.answer);
+      }
+    }
+    const detail = document.createElement('details');
+    detail.className = 'mb-2';
+    detail.innerHTML = `<summary><strong>Q${idx+1}.</strong> ${escapeHtml(q.question)} — <span class="text-${correct? 'success':'danger'}">${correct? 'Correct':'Incorrect'}</span></summary>
+      <div class="mt-1 small">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+      <div class="small">Correct answer: <strong>${escapeHtml(q.type==='mcq'? q.options[q.answer] : (q.answer? 'True':'False'))}</strong></div>
+      <div class="mt-1">${escapeHtml(q.explanation)}</div>`;
+    review.appendChild(detail);
+  });
+  body.appendChild(review);
+  card.appendChild(body);
+  finalDiv.appendChild(card);
+  finalDiv.scrollIntoView({behavior:'smooth'});
+}
+
+function autoSubmit(){ alert('Time is up — submitting'); finishTest(); }
+
+/* Scroll to top */
+document.getElementById('scrollTop').addEventListener('click', ()=>{ window.scrollTo({top:0,behavior:'smooth'}); });
+/* Reset */
+document.getElementById('btnReset').addEventListener('click', ()=>{ if(confirm('Reset and restart?')) location.reload(); });
+
+function escapeHtml(str){
+  if (str === null || str === undefined) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* initialize */
+updateProgress();
+</script>
+</body>
+</html>
