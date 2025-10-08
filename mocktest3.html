@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>UIDAI Operator Mock Test — Dark Theme (mocktest3)</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root{--bg:#0b1220;--card:#0f1724;--muted:#9aa6b2;--accent:#00d084;--danger:#ff6b6b}
+  body{background:linear-gradient(180deg,#07090f 0%, #0b1220 100%);color:#e6eef6;font-family:Inter,system-ui,Arial,sans-serif;margin:0;padding:12px}
+  .navbar, .card{background:var(--card);border:0}
+  .card-question{border-radius:12px}
+  .label-opt{background:transparent;color:#e6eef6;border-radius:8px}
+  .label-opt.correct{background:rgba(0,208,132,0.12);border-left:4px solid var(--accent)}
+  .label-opt.wrong{background:rgba(255,107,107,0.08);border-left:4px solid var(--danger)}
+  .label-opt.disabled{opacity:0.75}
+  .timer-badge{background:linear-gradient(90deg,#00d084,#00a3d8);font-weight:700;color:#021018}
+  a.btn-clear{color:var(--muted);text-decoration:underline}
+  .progress {background:rgba(255,255,255,0.04)}
+  .card .card-body h5{color:#f8fafc}
+  .feedback{background:rgba(255,255,255,0.02);padding:10px;border-radius:8px;margin-top:8px}
+  @media (max-width:600px){body{padding:8px}}
+</style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg mb-3">
+  <div class="container-fluid">
+    <a class="navbar-brand text-white fw-bold" href="#">UIDAI Operator — Dark Mock</a>
+    <div class="d-flex align-items-center gap-2">
+      <div class="text-end me-2">
+        <div class="small text-muted">Time left</div>
+        <div id="timer" class="badge timer-badge">60:00</div>
+      </div>
+      <button id="clearSaved" class="btn btn-outline-light btn-sm">Clear Saved</button>
+    </div>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">UIDAI Operator Mock Test — Dark Theme (50 Questions)</h5>
+      <p class="card-text text-muted">Answer shows immediate feedback and explanation. Your answers are saved locally (browser) so you can return later.</p>
+      <div class="progress mt-2" style="height:10px"><div id="progressBar" class="progress-bar bg-success" role="progressbar" style="width:0%"></div></div>
+      <div class="d-flex justify-content-between mt-2 text-muted"><div id="answeredCount">Answered: 0</div><div id="scoreMini">Score: 0</div></div>
+    </div>
+  </div>
+
+  <form id="quizForm">
+    <div id="questions"></div>
+    <div class="d-flex gap-2 my-3">
+      <button type="button" id="finishBtn" class="btn btn-success">Finish & Submit</button>
+      <button type="button" id="resetBtn" class="btn btn-outline-light">Reset (fresh)</button>
+      <button type="button" id="topBtn" class="btn btn-link text-muted">Go to Top</button>
+    </div>
+  </form>
+
+  <div id="finalResult"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// localStorage key
+const STORAGE_KEY = 'mocktest3_answers_v1';
+const TIME_KEY = 'mocktest3_time_v1';
+
+// Timer (load saved time if exists)
+let totalSeconds = parseInt(localStorage.getItem(TIME_KEY) || '3600',10);
+const timerEl = document.getElementById('timer');
+let timerInterval = setInterval(tick,1000);
+function tick(){
+  totalSeconds--;
+  if(totalSeconds<0){ clearInterval(timerInterval); autoSubmit(); return; }
+  localStorage.setItem(TIME_KEY, String(totalSeconds));
+  const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+  const s = String(totalSeconds%60).padStart(2,'0');
+  timerEl.textContent = `${m}:${s}`;
+}
+
+// Questions: UIDAI Operator-level (50 questions). Moderate.
+const questions = [
+  {id:1,type:'mcq',question:'What is the main purpose of Aadhaar authentication?',options:['Issue new Aadhaar','Verify identity for a transaction','Register to vote','Issue driving license'],answer:1,explanation:'Authentication is used to verify a resident\'s identity for services and transactions.'},
+  {id:2,type:'mcq',question:'Which biometric modalities are captured during enrolment?',options:['Fingerprint & iris & photograph','Voice only','DNA & retina','Only fingerprint'],answer:0,explanation:'Enrolment captures fingerprints, iris scan and a photograph as biometric identifiers.'},
+  {id:3,type:'tf',question:'Operators are allowed to store biometric templates locally. (True/False)',answer:false,explanation:'Storing biometric data locally is prohibited; data must be handled as per UIDAI policy.'},
+  {id:4,type:'mcq',question:'What is an EID (Enrollment ID)?',options:['Temporary enrolment reference','Permanent Aadhaar number','Operator ID','Device ID'],answer:0,explanation:'EID is a temporary reference provided at enrollment to check status before Aadhaar is generated.'},
+  {id:5,type:'mcq',question:'Which of these must be verified before enrolment?',options:['Original identity/address documents','Resident\'s social media','Random email','Only verbal confirmation'],answer:0,explanation:'Original documents must be verified to validate identity and address.'},
+  {id:6,type:'tf',question:'Masked Aadhaar displays only the last 4 digits. (True/False)',answer:true,explanation:'Masked Aadhaar hides all but the last four digits to protect privacy.'},
+  {id:7,type:'mcq',question:'If fingerprint capture fails repeatedly, operator should:',options:['Try alternate fingers or use OTP where permitted','Keep trying same finger indefinitely','Use someone else\'s finger','Skip enrollment'],answer:0,explanation:'Use alternate fingers or allowed alternate authentication like OTP and advise resident for biometric update if necessary.'},
+  {id:8,type:'mcq',question:'Which device is mandatory to be UIDAI-certified?',options:['Biometric scanner and enrolment software','Any mobile phone','Random USB camera','Home printer'],answer:0,explanation:'Only UIDAI-certified devices and software should be used for enrollments to ensure interoperability and security.'},
+  {id:9,type:'tf',question:'Operators must obtain resident\'s consent before authentication. (True/False)',answer:true,explanation:'Consent is mandatory before performing Aadhaar authentication or e-KYC.'},
+  {id:10,type:'mcq',question:'What should operator give to resident after enrolment?',options:['Acknowledgement slip with EID','Nothing','Their personal mobile','A printed photo only'],answer:0,explanation:'An enrollment acknowledgement containing the EID must be provided to the resident.'},
+  {id:11,type:'mcq',question:'Which action is a privacy best practice?',options:['Mask Aadhaar when displaying','Share OTP with others','Post Aadhaar publicly','Save Aadhaar in plain text'],answer:0,explanation:'Masking Aadhaar and protecting OTPs are recommended to reduce privacy risks.'},
+  {id:12,type:'tf',question:'Operators can ask residents to share OTPs with staff. (True/False)',answer:false,explanation:'OTP should never be shared with staff; it is for resident authentication only.'},
+  {id:13,type:'mcq',question:'When updating address online, a resident usually needs:',options:['OTP on registered mobile and supporting document','No verification','A friend\'s phone','Only email confirmation'],answer:0,explanation:'Online updates often require OTP to the registered mobile and supporting documents as applicable.'},
+  {id:14,type:'mcq',question:'Which is NOT part of demographic data in Aadhaar?',options:['Blood group','Name','DOB','Address'],answer:0,explanation:'Blood group is not stored as a standard demographic field in Aadhaar.'},
+  {id:15,type:'tf',question:'Operators should remind residents not to share OTPs with anyone. (True/False)',answer:true,explanation:'Operators should instruct residents to never share OTPs to prevent fraud.'},
+  {id:16,type:'mcq',question:'What is the recommended response to suspected fraud at centre?',options:['Stop process, record details and escalate','Continue quietly','Hide evidence','Ask resident to pay extra'],answer:0,explanation:'Suspected fraud must be reported and escalated following UIDAI and local procedures.'},
+  {id:17,type:'mcq',question:'Which of the following is allowed for offline verification?',options:['Scanning QR on e-Aadhaar','Posting number on forums','Sharing full Aadhaar on wall','Emailing OTP'],answer:0,explanation:'QR on e-Aadhaar holds digitally signed demographic data suitable for offline verification.'},
+  {id:18,type:'tf',question:'Enrollment centers must verify originals before accepting copies. (True/False)',answer:true,explanation:'Original documents must be checked by the operator/supervisor as per SOPs.'},
+  {id:19,type:'mcq',question:'What is an important quality metric for fingerprint capture?',options:['NFIQ or device quality score','Number of attempts only','Operator\'s age','Time of day'],answer:0,explanation:'Fingerprint quality metrics (like NFIQ) help ensure reliable biometrics.'},
+  {id:20,type:'mcq',question:'Which should operator do if network is down?',options:['Inform resident and follow offline SOPs or reschedule','Proceed storing data insecurely','Collect extra details for later','Cancel without informing'],answer:0,explanation:'Follow UIDAI offline procedures or reschedule; do not store sensitive data insecurely.'},
+  {id:21,type:'tf',question:'Operator must ensure the resident\'s face photo is clear and unobstructed. (True/False)',answer:true,explanation:'Clear facial photo is essential for identification; operator should retake if poor quality.'},
+  {id:22,type:'mcq',question:'Which step helps reduce biometric failure for elderly?',options:['Use alternate fingers and gentle placement','Use forceful pressure','Give up quickly','Use non-certified device'],answer:0,explanation:'Alternate fingers, proper technique and device settings improve capture for elderly residents.'},
+  {id:23,type:'tf',question:'Operators can retain copies of Aadhaar data on personal devices. (True/False)',answer:false,explanation:'Personal device storage of Aadhaar data is strictly prohibited.'},
+  {id:24,type:'mcq',question:'What is e-KYC used for?',options:['To provide consented KYC to service providers','To issue passports','To replace UIDAI','To publish data'],answer:0,explanation:'e-KYC allows residents to provide their identity information digitally to service providers after consent.'},
+  {id:25,type:'mcq',question:'What should operator do when photo quality is bad?',options:['Retake photo with correct lighting','Upload as is','Crop randomly','Ignore resident concerns'],answer:0,explanation:'Retake photos to meet quality requirements and ensure accurate enrolment.'},
+  {id:26,type:'tf',question:'Operators should log authentication attempts and notify supervisor of anomalies. (True/False)',answer:true,explanation:'Logging and reporting anomalies is necessary for audit and security.'},
+  {id:27,type:'mcq',question:'Which practice is secure for sharing Aadhaar details with agencies?',options:['Use masked Aadhaar or e-KYC with consent','Send full number via email','Public posting','Share OTPs'],answer:0,explanation:'Use masked Aadhaar or consent-based e-KYC; avoid sharing full numbers or OTPs.'},
+  {id:28,type:'mcq',question:'If resident requests deletion of local enrolment copies, operator should:',options:['Follow centre policy and remove copies if permitted by SOP','Refuse always','Share copies','Ignore request'],answer:0,explanation:'Operators should follow SOPs and remove local copies if policy permits and process is followed.'},
+  {id:29,type:'tf',question:'Operators should accept photocopies without checking originals. (True/False)',answer:false,explanation:'Originals must be verified before accepting photocopies per UIDAI rules.'},
+  {id:30,type:'mcq',question:'Which is a sign of potential identity fraud?',options:['Multiple enrolments with same demographic but different biometrics','A normal single enrolment','Resident with valid documents','Low-quality photo only'],answer:0,explanation:'Duplicate or conflicting enrolments can indicate fraud and should be investigated.'},
+  {id:31,type:'mcq',question:'What is recommended when collecting consent?',options:['Explain purpose, get explicit consent and record details','Assume consent silently','Force consent','Skip consent'],answer:0,explanation:'Consent must be informed and explicit; operators should explain purpose before performing authentication or e-KYC.'},
+  {id:32,type:'tf',question:'Operators can change demographic data without supporting documents. (True/False)',answer:false,explanation:'Demographic changes require supporting documents as per UIDAI policy.'},
+  {id:33,type:'mcq',question:'Which action helps maintain device hygiene and quality?',options:['Clean fingerprint scanner and camera regularly','Never clean devices','Use food to clean','Ignore maintenance'],answer:0,explanation:'Regular cleaning of devices ensures reliable biometric capture and hygienic operations.'},
+  {id:34,type:'mcq',question:'Which of these is a valid way to verify enrolment status?',options:['Use EID on UIDAI portal','Guess status verbally','Call random numbers','Check only paper slip without system'],answer:0,explanation:'EID on UIDAI portal allows checking enrolment generation status.'},
+  {id:35,type:'tf',question:'Operator should help residents understand the use of Aadhaar and their rights. (True/False)',answer:true,explanation:'Operators should inform residents about Aadhaar use, privacy rights and grievance mechanisms.'},
+  {id:36,type:'mcq',question:"Which immediate action is correct if OTP is not received?",options:["Verify registered mobile and resend OTP","Assume resident has no phone","Use another person's OTP","Proceed without OTP"],answer:0,explanation:"Verify the mobile number and resend OTP; do not use another person's OTP."},
+  {id:37,type:'mcq',question:'Which is an acceptable use of masked Aadhaar?',options:['Sharing for verification while hiding most digits','Publishing full Aadhaar','Posting on social media','Sending OTPs publicly'],answer:0,explanation:'Masked Aadhaar allows safe sharing by hiding most digits.'},
+  {id:38,type:'tf',question:'Operator must report lost or compromised devices immediately. (True/False)',answer:true,explanation:'Lost or compromised devices must be reported to prevent misuse and trigger security actions.'},
+  {id:39,type:'mcq',question:'Which is important when conducting enrolment outreach camps?',options:['Ensure proper equipment, privacy, document checks and supervisor oversight','Operate without devices','Skip privacy','Use uncertified software'],answer:0,explanation:'Outreach requires portable certified devices, privacy arrangements and oversight to maintain standards.'},
+  {id:40,type:'mcq',question:'Which is NOT a reason to reject an enrolment?',options:['High quality photo and valid documents','Mismatched ID details without verification','Fake documents','Fraud suspicion'],answer:0,explanation:'Good quality enrolment with valid documents should not be rejected; rejections occur for invalid/fraudulent cases.'},
+  {id:41,type:'tf',question:'Operator should never ask residents to reveal their OTPs. (True/False)',answer:true,explanation:'Requests for OTPs from residents are strictly prohibited to prevent fraud.'},
+  {id:42,type:'mcq',question:'What should operator do if a resident requests authentication history?',options:['Guide them to UIDAI portal or helpline','Provide raw logs directly','Refuse always','Delete logs'],answer:0,explanation:'Residents can access authentication history; operators should guide them to official UIDAI channels.'},
+  {id:43,type:'mcq',question:'Which practice reduces enrolment errors?',options:['Use validation checks, slow down data entry and verify documents carefully','Rush entries to finish quickly','Skip validation','Ignore mismatches'],answer:0,explanation:'Validation and careful verification reduce errors in demographic and biometric capture.'},
+  {id:44,type:'tf',question:'Operators can print residents\' Aadhaar number on publicly displayed forms. (True/False)',answer:false,explanation:'Aadhaar numbers should not be publicly displayed; masking is recommended when sharing.'},
+  {id:45,type:'mcq',question:'Which step should supervisor check to ensure data security?',options:['Encrypted transmission, access controls and no local retention','Open Wi-Fi sharing of data','Store backups on public drives','Share credentials'],answer:0,explanation:'Secure transmission, access control and avoiding local retention are key security measures.'},
+  {id:46,type:'mcq',question:'What is the role of biometric lock feature for residents?',options:['Allow residents to block biometric authentication temporarily','Delete Aadhaar','Share biometrics publicly','Replace Aadhaar number'],answer:0,explanation:'Biometric lock prevents biometric-based authentication until resident unlocks it, protecting against misuse.'},
+  {id:47,type:'tf',question:'Operator should always seek supervisor help if unsure about a document. (True/False)',answer:true,explanation:'When in doubt, operators should involve supervisors to avoid mistakes.'},
+  {id:48,type:'mcq',question:'Which is an appropriate immediate step after noticing suspicious duplicate enrolments?',options:['Pause processing and escalate to UIDAI or local team','Finish enrolment normally','Ignore duplicates','Delete old entries'],answer:0,explanation:'Duplicate cases should be escalated and investigated per UIDAI processes.'},
+  {id:49,type:'mcq',question:'Which of these is a permitted authentication mode?',options:['Biometric and OTP with resident consent','Biometric without consent','Use of leaked OTPs','Any phone call'],answer:0,explanation:'Authentication requires consent and uses biometric or OTP modes as permitted.'},
+  {id:50,type:'tf',question:'Operator should clear local session data after each enrolment to avoid data leakage. (True/False)',answer:true,explanation:'Clearing session data prevents accidental retention of personal data and reduces leakage risks.'}
+];
+
+// render
+const qContainer = document.getElementById('questions');
+let answered = 0; let score = 0; const total = questions.length;
+const progressBar = document.getElementById('progressBar');
+const answeredCount = document.getElementById('answeredCount');
+const scoreMini = document.getElementById('scoreMini');
+
+// load saved answers
+const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+questions.forEach((q, idx) =>{
+  const card = document.createElement('div'); card.className='card mb-3 card-question'; card.id = 'q'+q.id;
+  const body = document.createElement('div'); body.className='card-body';
+  let html = `<h6 class="card-subtitle mb-2">${idx+1}. ${escapeHtml(q.question)}</h6>`;
+  html += '<div class="list-group">';
+  if(q.type==='mcq'){
+    q.options.forEach((opt,i)=>{
+      html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="${i}"> <div>${escapeHtml(opt)}</div></label>`;
+    });
+  } else {
+    html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="true"> <div>True</div></label>`;
+    html += `<label class="list-group-item list-group-item-action label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false"><input class="form-check-input me-2" type="radio" name="q${q.id}" value="false"> <div>False</div></label>`;
+  }
+  html += '</div>';
+  html += `<div class="feedback" id="fb${q.id}" style="display:none"></div>`;
+  body.innerHTML = html; card.appendChild(body); qContainer.appendChild(card);
+
+  // restore saved
+  if(saved[q.id]!==undefined){
+    const val = saved[q.id];
+    const input = document.querySelector(`#q${q.id} input[value=\"${val}\"]`);
+    if(input){ input.checked = true; input.dispatchEvent(new Event('change')) }
+  }
+});
+
+// event
+qContainer.addEventListener('change', (e)=>{
+  const input = e.target; if(!input||input.type!=='radio') return;
+  const label = input.closest('label.label-opt');
+  const qid = parseInt(label.getAttribute('data-qid'),10);
+  handleAnswer(qid);
+});
+
+function handleAnswer(qid){
+  const q = questions.find(x=>x.id===qid); if(!q) return;
+  const fb = document.getElementById('fb'+q.id); if(fb.getAttribute('data-answered')==='true') return;
+  const sel = document.querySelector(`input[name='q${q.id}']:checked`); if(!sel) return;
+  let userText=''; let correct=false;
+  if(q.type==='mcq'){ const idx = parseInt(sel.value,10); userText = q.options[idx]; correct = (idx===q.answer); }
+  else { const val = (sel.value==='true'); userText = val? 'True':'False'; correct = (val===q.answer); }
+
+  // show feedback
+  fb.style.display='block';
+  fb.innerHTML = `<div class=\"fw-semibold text-${correct? 'text-success':'text-danger'}\">${correct? 'Correct ✓':'Incorrect ✗'}</div>
+    <div class=\"small mt-1\">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+    <div class=\"small\">Correct answer: <strong>${escapeHtml(q.type==='mcq'? q.options[q.answer] : (q.answer? 'True':'False'))}</strong></div>
+    <div class=\"mt-2\">${escapeHtml(q.explanation)}</div>`;
+  fb.setAttribute('data-answered','true');
+
+  // style & disable
+  const labels = document.querySelectorAll(`#q${q.id} label.label-opt`);
+  labels.forEach(l=> l.classList.add('disabled'));
+  labels.forEach(l=>{
+    const idxAttr = l.getAttribute('data-idx'); const valAttr = l.getAttribute('data-val');
+    if(q.type==='mcq' && idxAttr!==null){ const li = parseInt(idxAttr,10); if(li===q.answer) l.classList.add('correct'); const selIdx = parseInt(document.querySelector(`#q${q.id} input[type=radio]:checked`).value,10); if(li===selIdx && li!==q.answer) l.classList.add('wrong'); }
+    if(q.type==='tf' && valAttr!==null){ const b = (valAttr==='true'); if(b===q.answer) l.classList.add('correct'); if(document.querySelector(`#q${q.id} input[type=radio]:checked`).value===valAttr && b!==q.answer) l.classList.add('wrong'); }
+  });
+  const inputs = document.querySelectorAll(`#q${q.id} input`); inputs.forEach(i=> i.disabled = true);
+
+  // save answer locally
+  saved[q.id] = sel.value;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+  // update counts
+  answered++; if(correct) score++; updateProgress();
+
+  // auto scroll
+  setTimeout(()=>{ const next = findNextUnanswered(q.id); if(next) next.scrollIntoView({behavior:'smooth',block:'center'}); else document.getElementById('finishBtn').scrollIntoView({behavior:'smooth'}); },350);
+}
+
+function findNextUnanswered(){ for(const q of questions){ const fb = document.getElementById('fb'+q.id); if(!fb || fb.getAttribute('data-answered')!=='true') return document.getElementById('q'+q.id); } return null; }
+
+function updateProgress(){ const pct = Math.round((answered/total)*100); progressBar.style.width = pct+'%'; answeredCount.textContent = `Answered: ${answered} / ${total}`; scoreMini.textContent = `Score: ${score}`; }
+
+// finish
+document.getElementById('finishBtn').addEventListener('click', finishTest);
+function finishTest(){ clearInterval(timerInterval); const final = document.getElementById('finalResult'); final.innerHTML=''; const card = document.createElement('div'); card.className='card mt-3'; const body = document.createElement('div'); body.className='card-body'; body.innerHTML = `<h5 class="card-title">Final Score: ${score} / ${total}</h5><div class="text-muted">Percentage: ${(score/total*100).toFixed(2)}%</div>`; const review = document.createElement('div'); review.className='mt-2'; questions.forEach((q,idx)=>{ const fb = document.getElementById('fb'+q.id); const answeredFlag = fb && fb.getAttribute('data-answered')==='true'; let userText='No answer'; let correct=false; if(answeredFlag){ if(q.type==='mcq'){ const sel = document.querySelector(`#q${q.id} input[type=radio]:checked`); const idxSel = sel? parseInt(sel.value,10):null; userText = idxSel!==null? q.options[idxSel]:'No answer'; correct = (idxSel===q.answer); } else { const sel = document.querySelector(`#q${q.id} input[type=radio]:checked`); const val = sel? sel.value==='true' : null; userText = val===null? 'No answer' : (val? 'True':'False'); correct = (val===q.answer); } } const d = document.createElement('details'); d.className='mb-2'; d.innerHTML = `<summary><strong>Q${idx+1}.</strong> ${escapeHtml(q.question)} — <span class="text-${correct? 'success':'danger'}">${correct? 'Correct':'Incorrect'}</span></summary><div class="mt-1 small">Your answer: <strong>${escapeHtml(userText)}</strong></div><div class="small">Correct answer: <strong>${escapeHtml(q.type==='mcq'? q.options[q.answer] : (q.answer? 'True':'False'))}</strong></div><div class="mt-1">${escapeHtml(q.explanation)}</div>`; review.appendChild(d); }); body.appendChild(review); card.appendChild(body); final.appendChild(card); final.scrollIntoView({behavior:'smooth'}); }
+
+function autoSubmit(){ alert('Time is up — submitting'); finishTest(); }
+
+// reset
+document.getElementById('resetBtn').addEventListener('click', ()=>{ if(confirm('Reset all answers and start fresh?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }});
+
+document.getElementById('topBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+document.getElementById('clearSaved').addEventListener('click', ()=>{ if(confirm('Clear saved progress?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); alert('Saved data cleared. Page will reload.'); location.reload(); }});
+
+function escapeHtml(text){ if(text===null||text===undefined) return ''; return String(text).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// initialize counts from saved
+for(const q of questions){ if(saved[q.id]!==undefined) answered++; const selVal = saved[q.id]; if(selVal!==undefined){ const qObj = questions.find(x=>x.id===q.id); if(qObj){ if(qObj.type==='mcq'){ if(parseInt(selVal,10)===qObj.answer) score++; } else { if((selVal==='true')===qObj.answer) score++; } } } }
+updateProgress();
+</script>
+</body>
+</html>
