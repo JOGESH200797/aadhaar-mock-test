@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI Operator Mock Test - Mock 8</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --body-bg: #f5f7fa;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            padding: 12px;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .navbar .navbar-brand, .navbar .btn, .navbar .text-white {
+            color: white !important;
+        }
+
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-question {
+            background: var(--card-bg);
+        }
+
+        .label-opt {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 5px 0;
+            padding: 12px 15px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .label-opt:hover {
+            background: #f1f3f5;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .label-opt.correct {
+            background-color: #d1e7dd !important;
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .label-opt.wrong {
+            background-color: #f8d7da !important;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        .label-opt.disabled {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .feedback {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .timer-badge {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            font-weight: bold;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            color: white;
+        }
+
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .question-nav {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .question-nav .btn {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .floating-nav .btn {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .label-opt {
+                padding: 10px 12px;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <i class="fas fa-id-card-alt me-2"></i>
+                UIDAI Operator Mock Test - Mock 8
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <div class="text-end me-2">
+                    <div class="small text-light">Time left</div>
+                    <div id="timer" class="timer-badge">60:00</div>
+                </div>
+                <button id="clearSaved" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-trash-alt me-1"></i> Clear Saved
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card mb-4 stats-card">
+            <div class="card-body">
+                <h5 class="card-title d-flex align-items-center">
+                    <i class="fas fa-tasks me-2"></i> UIDAI Operator Mock Test — 50 Questions
+                </h5>
+                <p class="card-text">Your answers are saved automatically. Immediate feedback is shown after each question.</p>
+                <div class="progress mt-3">
+                    <div id="progressBar" class="progress-bar bg-success" style="width:0%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-white">
+                    <div id="answeredCount" class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-1"></i> Answered: 0
+                    </div>
+                    <div id="scoreMini" class="score-display">
+                        <i class="fas fa-star me-1"></i> Score: 0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            <div id="questions"></div>
+            
+            <div class="question-nav d-flex gap-2 my-4">
+                <button type="button" id="finishBtn" class="btn btn-success action-btn flex-fill">
+                    <i class="fas fa-flag-checkered me-2"></i> Finish & Submit
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary action-btn">
+                    <i class="fas fa-redo-alt me-2"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <div id="finalResult"></div>
+    </div>
+
+    <div class="floating-nav">
+        <button type="button" id="topBtn" class="btn btn-primary">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'mocktest8_answers_v1';
+        const TIME_KEY = 'mocktest8_time_v1';
+
+        // Timer
+        let totalSeconds = parseInt(localStorage.getItem(TIME_KEY) || '3600',10);
+        const timerEl = document.getElementById('timer');
+        let timerInterval = setInterval(tick,1000);
+        function tick(){
+            totalSeconds--;
+            if(totalSeconds < 0){ clearInterval(timerInterval); autoSubmit(); return; }
+            localStorage.setItem(TIME_KEY, String(totalSeconds));
+            const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+            const s = String(totalSeconds%60).padStart(2,'0');
+            timerEl.textContent = `${m}:${s}`;
+        }
+
+        // Questions for Mock Test 8
+        const questions = [
+            {id:1,type:'mcq',question:'Record date of birth of the resident, indicating day, month and ___________- in the relevant field.',options:['Initial','Surname','Year','Name'],answer:2,explanation:'Date of birth includes day, month, and year.'},
+            {id:2,type:'mcq',question:'If two documentary proofs produced by the enrollee have variation in the same name, the enrollee\'s _______ should be recorded.',options:['Surname','Father\'s name','Full name','Preferred name'],answer:2,explanation:'Full name should be recorded in case of variations.'},
+            {id:3,type:'mcq',question:'________ has to be recorded by the Enrolment Agency as declared by the enrollee in the box provided by recording Male, Female or Transgender.',options:['Date of Birth','Gender','Residential address','Fingerprint'],answer:1,explanation:'Gender must be recorded as declared by resident.'},
+            {id:4,type:'mcq',question:'For rural areas, which of the following fields can be left blank while recording the residential address?',options:['Address line 1','Address line 2','Pin Code','State'],answer:1,explanation:'Address line 2 can be left blank for rural areas.'},
+            {id:5,type:'mcq',question:'Which of the following details should be entered in the address line 4 of the residential address?',options:['Building or house number','Street name','Landmark','Pin Code'],answer:2,explanation:'Landmark should be in address line 4.'},
+            {id:6,type:'mcq',question:'Which of the following is used to retrieve pre-enrolment data?',options:['Pre-enrolment ID','One time password','Resident\'s name','Aadhaar ID'],answer:0,explanation:'Pre-enrolment ID retrieves pre-enrolment data.'},
+            {id:7,type:'mcq',question:'Name of the village/town/city (VTC) and Post Office field gets automatically populated when of the region is entered.',options:['House number','Mandal','Mobile number','Pin Code'],answer:3,explanation:'PIN code auto-populates VTC and Post Office fields.'},
+            {id:8,type:'mcq',question:'Which of the following will you do when a resident is unable to provide the exact date of birth?',options:['Leave the field blank','Enter the resident\'s zodiac sign','Enter the age as mentioned by the resident','Enter the year of birth'],answer:2,explanation:'Enter age as mentioned by resident if exact DOB unknown.'},
+            {id:9,type:'mcq',question:'The must ensure that every operator has a copy of the critical points to be reviewed at the station during the review.',options:['Enrolling Agency Supervisor','Introducer','Nodal officer','Resident'],answer:0,explanation:'Supervisor ensures operators have review points.'},
+            {id:10,type:'mcq',question:'Operator needs to sign off every enrolment by providing their fingerprint and or _____________.',options:['Mobile number','Signature','Iris','Original POI documents'],answer:2,explanation:'Operator signs off with fingerprint and/or iris.'},
+            {id:11,type:'mcq',question:'Which of the following fields will be activated in case of Introducer-based verification?',options:['Biometric','Introducer or HOF','Address','POI'],answer:1,explanation:'Introducer or HOF fields activated for introducer-based verification.'},
+            {id:12,type:'mcq',question:'Enrolment Agencies must use Biometric Devices certified by ________ for capturing Biometric data.',options:['UIDAI','STQC','MNREGA','DoPT'],answer:1,explanation:'STQC certified biometric devices must be used.'},
+            {id:13,type:'mcq',question:'For fingerprint capture, the fingers have to be positioned correctly on the __________ to enable capture.',options:['Paper','Ink pad','Platen','Fingerprinting pads'],answer:2,explanation:'Fingers positioned on platen for capture.'},
+            {id:14,type:'tf',question:'Fingerprints are best captured in standing position.',answer:true,explanation:'Standing position provides best fingerprint capture.'},
+            {id:15,type:'mcq',question:'For capturing facial image, _______ of the enrollee needs to be captured.',options:['Frontal pose','Side pose','Any comfortable pose','All the given options'],answer:0,explanation:'Frontal pose required for facial image capture.'},
+            {id:16,type:'mcq',question:'It is difficult for human operators to analyse and recognise face images with __________.',options:['Poor focus','Poor expression','Poor illumination','Poor accessories'],answer:2,explanation:'Poor illumination makes face recognition difficult.'},
+            {id:17,type:'mcq',question:'If the person normally wears glasses, it is recommended that the photograph be taken ____________.',options:['With glasses','Without glasses','Only eye ball','None of the given options'],answer:0,explanation:'Photograph should be taken with glasses if normally worn.'},
+            {id:18,type:'mcq',question:'While capturing facial image, use of _______ that cover any region of the face is not permitted.',options:['Lighting','Make-up','Accessories','Illumination'],answer:2,explanation:'Accessories covering face are not permitted.'},
+            {id:19,type:'mcq',question:'To capture iris, will handle the capture device.',options:['Operator','Enrollee','Nodal officer','EA supervisor'],answer:0,explanation:'Operator handles iris capture device.'},
+            {id:20,type:'mcq',question:'The iris capture procedure is sensitive to _________ light.',options:['Illumination','Ambient','Side','Tube'],answer:1,explanation:'Iris capture is sensitive to ambient light.'},
+            {id:21,type:'mcq',question:'Accessories like are allowed due to religious reasons while capturing facial image.',options:['Eye patches','Lens','Turban','Glasses'],answer:2,explanation:'Turbans allowed for religious reasons.'},
+            {id:22,type:'mcq',question:'For fingerprint capture, use the _________ on fingerprint devices for positioning of fingers.',options:['Cloth provided','Bars','Light','Indicators'],answer:3,explanation:'Use indicators for finger positioning.'},
+            {id:23,type:'mcq',question:'Pre-enrolment data will get populated in the respective fields when you enter the _________.',options:['Name','Gender','Pre-enrolment ID','Date of birth'],answer:2,explanation:'Pre-enrolment ID populates data fields.'},
+            {id:24,type:'mcq',question:'If verification type is Introducer-based, _________ of the Introducer has to be recorded.',options:['Aadhaar card number','Name and UID','Facial image','Thumb impressions of both hands'],answer:1,explanation:'Introducer name and UID must be recorded.'},
+            {id:25,type:'mcq',question:'_____________- sign off is activated in the software in case of biometric exceptions.',options:['Supervisor\'s','Operator\'s','Introducer\'s','Registrar\'s'],answer:0,explanation:'Supervisor sign-off for biometric exceptions.'},
+            {id:26,type:'mcq',question:'To capture , the capture device should use auto focus and auto- capture functions.',options:['Fingerprint','Facial image','Iris','None of the given options'],answer:1,explanation:'Facial image capture uses auto-focus and auto-capture.'},
+            {id:27,type:'mcq',question:'Accessories like are allowed due to medical reasons while capturing facial image.',options:['Turban','Fringes','Eye patches','Make-up'],answer:2,explanation:'Eye patches allowed for medical reasons.'},
+            {id:28,type:'mcq',question:'If the significant part of iris is not visible in iris capture, the feedback provided by software is called _________ .',options:['Illumination','Gaze incorrect','Pupil dilation','Occlusion'],answer:3,explanation:'Occlusion feedback when iris not fully visible.'},
+            {id:29,type:'mcq',question:'For a child below 5 years, the biometric of linked has to be captured.',options:['Operator','Parent or relative','Birth certificate','None of the given options'],answer:1,explanation:'Parent/relative biometric linked for child below 5.'},
+            {id:30,type:'mcq',question:'To clean the platen of the fingerprint device, use cloth periodically.',options:['Denim','Lint-free cloth','Flannel cloth','Fur'],answer:1,explanation:'Lint-free cloth for platen cleaning.'},
+            {id:31,type:'mcq',question:'There should not be on the platen while capturing fingerprints.',options:['Proper conditions','Sufficient light','Shadow of the operator','Direct light shining'],answer:3,explanation:'No direct light shining on platen during capture.'},
+            {id:32,type:'mcq',question:'Ensure that the fingers are placed _____________ is placed well on the scanner.',options:['Straight and tip of the finger','Flat and till the top joint of the finger','Diagonally and cloth','None of the given options'],answer:1,explanation:'Fingers flat till top joint on scanner.'},
+            {id:33,type:'mcq',question:'Fingers not positioned correctly is a/an _____________.',options:['Automatic capture','Actionable feedback by software','Smudged fingerprint','Enrollee position'],answer:1,explanation:'Incorrect finger position generates actionable feedback.'},
+            {id:34,type:'mcq',question:'During facial image capture, the focus of the capture device should not suffer from ______________.',options:['Motion blur or radial distortion','Over or under exposure','Unnatural coloured lighting','All of the given'],answer:3,explanation:'All listed issues should be avoided.'},
+            {id:35,type:'mcq',question:'If the resident declares the date of birth without any documentary evidence, you need to record date of birth and ___________.',options:['Check the "Verified" box','Should not check the "Verified" box','Enter the date manually','Approximat e the age'],answer:1,explanation:'Do not check "Verified" box without documentary evidence.'},
+            {id:36,type:'mcq',question:'To record the gender of an applicant as \'Male\', you need to select __________ letter from the box provided.',options:['M','F','T','None of the given options'],answer:0,explanation:'Use "M" for Male gender.'},
+            {id:37,type:'mcq',question:'________________ needs to be captured in address line 5 of the residential address.',options:['C/o person\'s name','Building number','Landmark','Mohalla/ Locality/ Post'],answer:3,explanation:'Mohalla/Locality/Post in address line 5.'},
+            {id:38,type:'mcq',question:'Registrar/EA should ensure beforehand that the Pin Numbers of the region in which enrolment is to be carried out are completely and correctly captured in ___________.',options:['Software PIN Master','Pre-enrolment ID','CIDR PIN','Proof of Address'],answer:0,explanation:'PIN numbers in Software PIN Master.'},
+            {id:39,type:'mcq',question:'_____________________ used for facial image capture should be switched off during iris capture.',options:['Table fan','Table light','Auto focus','Mobile phone'],answer:1,explanation:'Table light should be off during iris capture.'},
+            {id:40,type:'mcq',question:'Poor illumination has a high impact on the performance of ___________.',options:['Retrieving pre- enrolment ID','Fingerprint capture','Iris capture','Face recognition'],answer:3,explanation:'Poor illumination affects face recognition most.'},
+            {id:41,type:'mcq',question:'To capture facial image of a child, it is acceptable that the child _______________.',options:['Can be captured along with the parent\'s face','Can sit on parents\' lap without capturing parent\'s facial image','Sleeps on the bed if available','Stands on the enrolling table so that fingerprints can be captured at least'],answer:1,explanation:'Child can sit on parent\'s lap without capturing parent\'s face.'},
+            {id:42,type:'mcq',question:'___________ needs to be checked for any capture that fails.',options:['Actionable feedback','Automatic capture','Smudged fingerprint','Accessories'],answer:0,explanation:'Check actionable feedback for failed captures.'},
+            {id:43,type:'mcq',question:'Iris pattern of each eye is not correlated and gives biometric feature sets.',options:['One unique','Two independent','Three dependent','None of the given options'],answer:1,explanation:'Each iris gives two independent biometric feature sets.'},
+            {id:44,type:'mcq',question:'If the resident is looking away while capturing Iris, the actionable feedback given by software is __________.',options:['Occlusion','Pupil dilation','Gaze incorrect','Iris not in focus'],answer:2,explanation:'"Gaze incorrect" feedback for looking away.'},
+            {id:45,type:'mcq',question:'The _____________ document produced by an individual needs to be verified before recording the residential address in case of document-based verification.',options:['Date of Birth','Proof of address','Proof of identity','Caste Certificate'],answer:1,explanation:'Proof of address verified for residential address.'},
+            {id:46,type:'mcq',question:'If the actionable feedback given by software is \'Pose\', then the yaw angle in output image is greater than _____________ .',options:['12.7 degrees','10.3 degrees','11.5 degrees','13.8 degrees'],answer:2,explanation:'Pose feedback when yaw angle > 11.5 degrees.'},
+            {id:47,type:'mcq',question:'_________________ from the following is/are best captured in standing position.',options:['Iris','Facial image','Fingerprint','Palm print'],answer:2,explanation:'Fingerprints best captured standing.'},
+            {id:48,type:'mcq',question:'An initial to provide feedback to the operator during the capture procedure.',options:['Automatic capture will be taken','Image quality assessment would be done','Image effects will be suggested','Actionable feedback by software will be provided'],answer:1,explanation:'Image quality assessment provides initial feedback.'},
+            {id:49,type:'mcq',question:'To instruct the resident to open the eyes wide for IRIS scan, the operator can even tell the resident to __________ .',options:['Smile','Look diagonally','Look angry','Look above'],answer:2,explanation:'"Look angry" helps open eyes wide.'},
+            {id:50,type:'mcq',question:'If verification type is Documents-based, appropriate __________ document(s) is/are to be selected from the drop down depending on the document produced by the resident and verified by the verifier.',options:['Proof of identity','Proof of address','Both (1) and (2)','UID'],answer:2,explanation:'Both PoI and PoA documents selected for document-based verification.'}
+        ];
+
+        const qContainer = document.getElementById('questions');
+        let answered = 0, score = 0, total = questions.length;
+        const progressBar = document.getElementById('progressBar');
+        const answeredCount = document.getElementById('answeredCount');
+        const scoreMini = document.getElementById('scoreMini');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Render
+        questions.forEach((q, idx)=>{
+            const card = document.createElement('div');
+            card.className='card mb-4 card-question';
+            card.id='q'+q.id;
+            const body = document.createElement('div');
+            body.className='card-body';
+            let html = `<h6 class="d-flex align-items-start"><span class="question-number">${idx+1}</span> ${escapeHtml(q.question)}</h6>`;
+            if(q.type==='mcq'){
+                q.options.forEach((opt,i)=>{
+                    html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}">
+                        <input class="form-check-input me-3" type="radio" name="q${q.id}" value="${i}">
+                        <span>${escapeHtml(opt)}</span>
+                    </label>`;
+                });
+            } else {
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="true">True
+                </label>`;
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="false">False
+                </label>`;
+            }
+            html += `<div class="feedback" id="fb${q.id}" style="display:none"></div>`;
+            body.innerHTML = html;
+            card.appendChild(body);
+            qContainer.appendChild(card);
+        });
+
+        // Event
+        qContainer.addEventListener('change',(e)=>{
+            if(e.target.type!=='radio') return;
+            const qid = parseInt(e.target.closest('label').dataset.qid,10);
+            handleAnswer(qid);
+        });
+
+        function handleAnswer(qid){
+            const q = questions.find(x=>x.id===qid);
+            const fb = document.getElementById('fb'+q.id);
+            if(fb.getAttribute('data-answered')==='true') return;
+
+            const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+            if(!sel) return;
+            let userText='', correct=false;
+            if(q.type==='mcq'){ const idx=parseInt(sel.value,10); userText=q.options[idx]; correct=(idx===q.answer); }
+            else { const val=(sel.value==='true'); userText=val?'True':'False'; correct=(val===q.answer); }
+
+            fb.style.display='block';
+            fb.innerHTML=`<strong class="text-${correct?'success':'danger'}">${correct?'<i class="fas fa-check-circle me-1"></i> Correct':'<i class="fas fa-times-circle me-1"></i> Incorrect'}</strong>
+            <div class="mt-1">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+            <div>Correct answer: <strong>${escapeHtml(q.type==='mcq'?q.options[q.answer]:(q.answer?'True':'False'))}</strong></div>
+            <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+            fb.setAttribute('data-answered','true');
+
+            document.querySelectorAll(`#q${q.id} .label-opt`).forEach(l=>l.classList.add('disabled'));
+            if(correct) document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+            else {
+                document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+                sel.closest('label').classList.add('wrong');
+            }
+
+            saved[q.id]=sel.value;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+            answered++; if(correct) score++; updateProgress();
+        }
+
+        function updateProgress(){
+            const pct=Math.round((answered/total)*100);
+            progressBar.style.width=pct+'%';
+            answeredCount.textContent=`Answered: ${answered}/${total}`;
+            scoreMini.textContent=`Score: ${score}`;
+        }
+
+        function finishTest(){
+            clearInterval(timerInterval);
+            const final=document.getElementById('finalResult');
+            final.innerHTML=`<div class="card mt-4">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">Test Completed!</h4>
+                    <div class="display-4 fw-bold text-primary mb-2">${score}/${total}</div>
+                    <p class="text-muted mb-3">Percentage: ${(score/total*100).toFixed(2)}%</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-redo-alt me-2"></i> Try Again
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                            <i class="fas fa-arrow-up me-2"></i> Back to Top
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            final.scrollIntoView({behavior:'smooth'});
+        }
+
+        function autoSubmit(){
+            alert('⏰ Time is up — submitting your test.');
+            finishTest();
+        }
+
+        document.getElementById('finishBtn').addEventListener('click', finishTest);
+        document.getElementById('resetBtn').addEventListener('click', ()=>{
+            if(confirm('Reset all answers?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('clearSaved').addEventListener('click', ()=>{
+            if(confirm('Clear saved data?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('topBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+        function escapeHtml(t){return t?.toString().replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))||'';}
+    </script>
+</body>
+</html>

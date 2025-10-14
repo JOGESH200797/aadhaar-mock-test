@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI Operator Mock Test - Mock 9</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --body-bg: #f5f7fa;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            padding: 12px;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .navbar .navbar-brand, .navbar .btn, .navbar .text-white {
+            color: white !important;
+        }
+
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-question {
+            background: var(--card-bg);
+        }
+
+        .label-opt {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 5px 0;
+            padding: 12px 15px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .label-opt:hover {
+            background: #f1f3f5;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .label-opt.correct {
+            background-color: #d1e7dd !important;
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .label-opt.wrong {
+            background-color: #f8d7da !important;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        .label-opt.disabled {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .feedback {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .timer-badge {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            font-weight: bold;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            color: white;
+        }
+
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .question-nav {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .question-nav .btn {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .floating-nav .btn {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .label-opt {
+                padding: 10px 12px;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <i class="fas fa-id-card-alt me-2"></i>
+                UIDAI Operator Mock Test - Mock 9
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <div class="text-end me-2">
+                    <div class="small text-light">Time left</div>
+                    <div id="timer" class="timer-badge">60:00</div>
+                </div>
+                <button id="clearSaved" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-trash-alt me-1"></i> Clear Saved
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card mb-4 stats-card">
+            <div class="card-body">
+                <h5 class="card-title d-flex align-items-center">
+                    <i class="fas fa-tasks me-2"></i> UIDAI Operator Mock Test — 50 Questions
+                </h5>
+                <p class="card-text">Your answers are saved automatically. Immediate feedback is shown after each question.</p>
+                <div class="progress mt-3">
+                    <div id="progressBar" class="progress-bar bg-success" style="width:0%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-white">
+                    <div id="answeredCount" class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-1"></i> Answered: 0
+                    </div>
+                    <div id="scoreMini" class="score-display">
+                        <i class="fas fa-star me-1"></i> Score: 0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            <div id="questions"></div>
+            
+            <div class="question-nav d-flex gap-2 my-4">
+                <button type="button" id="finishBtn" class="btn btn-success action-btn flex-fill">
+                    <i class="fas fa-flag-checkered me-2"></i> Finish & Submit
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary action-btn">
+                    <i class="fas fa-redo-alt me-2"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <div id="finalResult"></div>
+    </div>
+
+    <div class="floating-nav">
+        <button type="button" id="topBtn" class="btn btn-primary">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'mocktest9_answers_v1';
+        const TIME_KEY = 'mocktest9_time_v1';
+
+        // Timer
+        let totalSeconds = parseInt(localStorage.getItem(TIME_KEY) || '3600',10);
+        const timerEl = document.getElementById('timer');
+        let timerInterval = setInterval(tick,1000);
+        function tick(){
+            totalSeconds--;
+            if(totalSeconds < 0){ clearInterval(timerInterval); autoSubmit(); return; }
+            localStorage.setItem(TIME_KEY, String(totalSeconds));
+            const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+            const s = String(totalSeconds%60).padStart(2,'0');
+            timerEl.textContent = `${m}:${s}`;
+        }
+
+        // Questions for Mock Test 9
+        const questions = [
+            {id:1,type:'mcq',question:'If the fingerprint captured is not of the requisite quality, the operator would make a reasonable number of attempts to capture the biometrics of the resident.',options:['TRUE','FALSE'],answer:0,explanation:'Multiple attempts should be made for quality biometric capture.'},
+            {id:2,type:'mcq',question:'If an enrollee is unable to give biometrics due to loss of fingers, this is a/an _________ and needs to be handled thus.',options:['Iris capture','Biometric update','Consultation','Exception'],answer:3,explanation:'Loss of fingers is a biometric exception.'},
+            {id:3,type:'tf',question:'If capturing Iris image is not possible due to bandage across one or both eyes, the same has to be recorded in the system by the operator.',answer:true,explanation:'Bandaged eyes should be recorded as exception.'},
+            {id:4,type:'tf',question:'If the resident has applied mehendi on her hand, the fingerprint image has to be captured normally.',answer:true,explanation:'Mehendi does not prevent fingerprint capture.'},
+            {id:5,type:'mcq',question:'While handling fingerprint images, if the finger/s is/are ________ , the same has to be noted in the data as provided in the software.',options:['Missing','Amputated','Bandaged','All of the given options'],answer:3,explanation:'All listed conditions should be noted as exceptions.'},
+            {id:6,type:'tf',question:'If the operator is not able to capture facial image because of the poor light, the operator should move the enrolment station to a location in the room with better light.',answer:true,explanation:'Better lighting should be sought for facial image capture.'},
+            {id:7,type:'mcq',question:'If the bandaged finger of the applicant has to be captured for fingerprint image, the operator should ___________.',options:['Crop the bandage in the image','Capture the fingerprints of the remaining fingers','Capture the image of bandaged finger separately and other fingers separately and group both the images','All of the given options'],answer:1,explanation:'Capture remaining fingers if bandaged.'},
+            {id:8,type:'tf',question:'If standard images of the fingerprints are not possible for an enrollee due to dryness, the operator should politely ask the enrollee to wash his face.',answer:false,explanation:'Should ask to wash hands, not face.'},
+            {id:9,type:'tf',question:'The operator would make a reasonable number of attempts to capture the biometrics of the resident if the fingerprint captured on the platen is not of the requisite quality.',answer:true,explanation:'Multiple attempts for quality fingerprints.'},
+            {id:10,type:'tf',question:'If capturing Iris image is not possible due to any deformity or disease, the operator should ask the resident to get the eyes operated.',answer:false,explanation:'Should not ask for medical procedures.'},
+            {id:11,type:'mcq',question:'For enrolment of resident with biometric exception, operator should mandatorily capture ___________.',options:['Both hands (open palms facing the camera) in an exception photo','Face photo with open eyes (if possible) in an exception photo','None','Both 1 and 2'],answer:3,explanation:'Both hands and face should be captured for exceptions.'},
+            {id:12,type:'mcq',question:'Raju is unable to open his eyes properly for capturing iris image. What can the operator do in this case?',options:['Warn Raju to open his eyes wide','Take the help of a lady volunteer','Help the enrollee to open the eyes with the help of your own hands','All of the given options'],answer:2,explanation:'Operator can gently help open eyes if needed.'},
+            {id:13,type:'mcq',question:'After repeated attempts, Devi\'s fingerprints could not be captured with the desired quality. In that case, ___________can be done.',options:['Provide a wet sponge or towel available in the centre','Tell the enrollee to wash her hands as they are greasy','Take her thumb impression and then fingerprint','Apply pressure on her hands'],answer:0,explanation:'Provide wet sponge/towel to improve capture.'},
+            {id:14,type:'tf',question:'If the resident has extra finger or fingers, the operator needs to ignore the extra finger.',answer:true,explanation:'Ignore extra fingers during capture.'},
+            {id:15,type:'tf',question:'If the finger or iris of the resident has temporary damage and it is not possible to capture the biometrics, the operator will record it in exceptions.',answer:true,explanation:'Temporary damage should be recorded as exception.'},
+            {id:16,type:'mcq',question:'If the enrollee is unable to flatten the fingers, the operator can __________.',options:['Take the enrollee\'s permission and then assist him','Try to obtain fingerprints to the extent that the enrollee is able to flatten','Move to the next set of fingerprints of the other hand or two thumbs','All of the given options'],answer:3,explanation:'All listed approaches can be used.'},
+            {id:17,type:'mcq',question:'If the enrollee is unable to give biometrics due to this is exception and needs to be handled thus.',options:['Injury','Amputation of fingers or hands','Problems related to eyes','All of the given options'],answer:3,explanation:'All listed are biometric exceptions.'},
+            {id:18,type:'mcq',question:'If the enrollee has only one eye and capturing of iris image is not possible, then the operator should _________.',options:['Ask the enrollee to wear lens','Record the same in the system','Politely ask the enrollee to wash the eyes','Ask the enrollee to tie a bandage on the other eye'],answer:1,explanation:'Record single eye as exception.'},
+            {id:19,type:'tf',question:'Biometric confirmation of fingerprints, iris and photograph are mandatory for any demographic update at Enrolment Centre.',answer:true,explanation:'Biometric confirmation required for demographic updates.'},
+            {id:20,type:'tf',question:'If the operator is not able to capture both eyes at a time due to squint or disoriented eyes, the operator can recapture the iris image.',answer:true,explanation:'Recapture allowed for squint/disoriented eyes.'},
+            {id:21,type:'mcq',question:'The hands of the enrollee are dry and the equipment is unable to capture the fingerprints. The operator can ____________',options:['Politely ask the enrollee to wash the hands','Politely ask the enrollee to wipe the hands with a cotton cloth','Tell the enrollee that his hands are rough and dry and hence fingerprints cannot be captured','Both 1 and 2'],answer:3,explanation:'Washing or wiping hands can help with dry skin.'},
+            {id:22,type:'tf',question:'If capturing Iris image is not possible due to absence of one or both eyes, the operator should record the same in the system.',answer:true,explanation:'Absence of eyes should be recorded.'},
+            {id:23,type:'mcq',question:'If the enrollee has amputated fingers, which of the following has to be done?',options:['The backdrop should be preferably placed against an opaque wall/partition','No flash is to be used','Assistance may be provided to the enrollee to stand straight','The fingerprints of remaining fingers are captured by the operator'],answer:3,explanation:'Capture remaining fingers for amputees.'},
+            {id:24,type:'tf',question:'If the enrollee is unable to sit in correct position because of old age, it is a general exception.',answer:true,explanation:'Old age positioning issues are exceptions.'},
+            {id:25,type:'tf',question:'If the fingerprint captured is not of the requisite quality, the operator should crop the image.',answer:false,explanation:'Should not crop images; retake instead.'},
+            {id:26,type:'tf',question:'If the enrollee is not able to give complete set of biometrics as required by UIDAI, the reasons are considered as exceptions.',answer:true,explanation:'Incomplete biometrics are exceptions.'},
+            {id:27,type:'tf',question:'If a resident has an extra finger, the operator needs to assist the resident in the fingerprint capture to avoid capture of the extra finger.',answer:true,explanation:'Assist to avoid capturing extra fingers.'},
+            {id:28,type:'mcq',question:'The operator would make a reasonable number of attempts to capture the biometrics of the resident if the ________ captured on the platen is not of the requisite quality.',options:['Iris','Fingerprint','Facial image','Forehead'],answer:1,explanation:'Multiple attempts for fingerprint quality.'},
+            {id:29,type:'mcq',question:'If capturing Iris image is not possible due to non-existence of one or both eyes, the operator should ___________.',options:['Ask the resident to undergo eye operation','Open the eyes of the resident and auto capture','Auto focus the device','Record the same in the system'],answer:3,explanation:'Record absence of eyes in system.'},
+            {id:30,type:'tf',question:'If the enrollee is not able to keep self in correct posture for reaching biometric instruments or for photograph due to old age or sickness, this is an exception in handling fingerprint image capture.',answer:false,explanation:'This is general exception, not specific to fingerprint.'},
+            {id:31,type:'mcq',question:'If the capture of both eyes at a time is not possible due to squint or disoriented eyes, the operator may attempt to __________.',options:['Auto capture','Auto focus','Recapture','Request the resident to open their eyes wide'],answer:2,explanation:'Recapture for squint/disoriented eyes.'},
+            {id:32,type:'mcq',question:'Rama Devi is a 42-year-old daily wage labourer. While collecting her biometric data, the operator notices that the quality of her fingerprints are not good enough. He makes repeated attempts to capture her fingerprints but is faced with the same result. What can be done in that situation?',options:['Operator can flatten Rama Devi\'s fingers on the platen','Operator can ask women operators or volunteers to flatten Rama Devi\'s fingers','Tell her seriously that she needs to flatten fingers by herself','Both 1 and 2'],answer:1,explanation:'Women operators/volunteers can assist with flattening.'},
+            {id:33,type:'mcq',question:'Veeraiah is an elderly person aged about 50 years. He was not in a position to keep himself in correct posture for reaching biometric instruments or for photograph due to sickness. How can the operator capture biometric data of Veeraiah?',options:['Operator can move the equipment close to the enrollee','Move the enrollment station to a location in the room with better light','Request the resident politely if he can get any attendee from his home','Place the backdrop against an opaque wall/partition'],answer:0,explanation:'Move equipment closer for elderly/sick residents.'},
+            {id:34,type:'tf',question:'If the iris or finger of the resident has temporary damage and it is not possible to capture the biometrics, the operator will record it in exceptions.',answer:true,explanation:'Temporary damage recorded as exception.'},
+            {id:35,type:'mcq',question:'Anusha needs to attend her cousin\'s wedding tomorrow and she has applied mehendi on her hands. How can the operator handle capturing Anusha\'s fingerprint image?',options:['Ask her to come after a week after the mehendi goes off','Capture as normal','Ask her to rub her hands with a moistened cloth','Apply anti- mehendi gel on her palm and capture the image'],answer:1,explanation:'Capture normally with mehendi.'},
+            {id:36,type:'mcq',question:'If the operator is not able to capture facial image because of the poor light, which is an actionable feedback, then the situation has to be handled by _________.',options:['Using the generator back- up to improve lighting','Move the enrolment station to a location in the room with better light','Place the backdrop against an opaque wall/partition','All of the given'],answer:3,explanation:'All methods can improve lighting.'},
+            {id:37,type:'mcq',question:'If the finger or iris of the resident has temporary damage and it is not possible to capture the biometrics, the operator will record it in _______________.',options:['To be captured later','Consultation','Exceptions','Biometric updated'],answer:2,explanation:'Record in exceptions for temporary damage.'},
+            {id:38,type:'mcq',question:'Which of the following comes under general exception?',options:['Squint or disoriented eyes','Hands blackened due to mehendi','Unable to sit in correct position because of old age','Unable to keep head or torso still and vertical'],answer:2,explanation:'Old age positioning is general exception.'},
+            {id:39,type:'mcq',question:'Rangaiah is a woodcutter and while cutting trees, he hurt his index finger and it has been bandaged. How can the operator handle the fingerprint image capture?',options:['Provide assistance by holding him to stand in a correct position','The operator should capture the fingerprints of remaining fingers','Remove the bandage, capture the fingerprint and re-tie the bandage','Capture the fingerprints till nails and palm and on the other hand, normal fingerprint'],answer:1,explanation:'Capture remaining fingers if one is bandaged.'},
+            {id:40,type:'mcq',question:'An enrollee will not be in a position to give complete set of biometrics as required by UIDAI because of the reason/reasons like _________.',options:['Injury','Amputation of fingers or hands','Problems related to eyes','All of the given'],answer:3,explanation:'All listed prevent complete biometric capture.'},
+            {id:41,type:'mcq',question:'Identify the error type in the given image.',options:['Possible Age – Photo Mismatch','Possible Gender Photo Mismatch','Photo of Photo'],answer:0,explanation:'Age-photo mismatch when appearance doesn\'t match declared age.'},
+            {id:42,type:'mcq',question:'Identify the error type in the given image.',options:['Poor Quality Photograph/ Incorrect Photo','Possible Error in Name and Address','Relationship Error','Possible Error in Name and Address Transliteration'],answer:3,explanation:'Transliteration error when local/English versions don\'t match.'},
+            {id:43,type:'mcq',question:'Identify the error type in the given image.',options:['Relationship Error','Incomplete Address','Possible Error in Name and Address Transliteration','Photo of Photo'],answer:0,explanation:'Relationship error when gender/photo doesn\'t match relationship.'},
+            {id:44,type:'mcq',question:'Identify the error type in the given image.',options:['Relationship Error','No Exception Available in Exception Photo','Photo of Photo','Incomplete Address'],answer:2,explanation:'Photo of photo when photograph is captured instead of live person.'},
+            {id:45,type:'mcq',question:'Identify the error type in the given image.',options:['Poor Quality in Exception Photo','No Exception Available in Exception Photo','Object in Exception Photo','Photo of Photo in Exception Photo'],answer:1,explanation:'No exception in exception photo when photo shows no actual exception.'},
+            {id:46,type:'mcq',question:'Identify the error type in the given image.',options:['Relationship Error','Object in Exception Photo','Both Photo of different Person','Exception Photo not as per guidelines'],answer:1,explanation:'Object in exception photo when non-human object appears.'},
+            {id:47,type:'mcq',question:'Identify the error type in the given image.',options:['Relationship Error','Object in Exception Photo','Both Photo of different Person','Exception Photo not as per guidelines'],answer:2,explanation:'Both photos different when main and exception photos show different people.'},
+            {id:48,type:'mcq',question:'What is a relationship error?',options:['When there is a mismatch in father\'s and daughter\'s address','When the given relationship in the address section is not matching with given Gender or Photograph of the resident','When the facial features of members in a family are not matching','When a woman mentions her ex- husband\'s name in her Aadhaar'],answer:1,explanation:'Relationship error when gender/photo doesn\'t match declared relationship.'},
+            {id:49,type:'mcq',question:'How do you identify an incomplete address?',options:['If less than three locations are given','If landmark is not given','If street number is not mentioned','If the office address is not given'],answer:0,explanation:'Incomplete address when less than three location elements provided.'},
+            {id:50,type:'mcq',question:'Which of the following is considered as fraud?',options:['If incomplete address is entered','Incorrectly entering the age of the resident','Taking photo of photo','Capturing a blurred photo'],answer:2,explanation:'Photo of photo is considered fraud as it indicates resident not present.'}
+        ];
+
+        const qContainer = document.getElementById('questions');
+        let answered = 0, score = 0, total = questions.length;
+        const progressBar = document.getElementById('progressBar');
+        const answeredCount = document.getElementById('answeredCount');
+        const scoreMini = document.getElementById('scoreMini');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Render
+        questions.forEach((q, idx)=>{
+            const card = document.createElement('div');
+            card.className='card mb-4 card-question';
+            card.id='q'+q.id;
+            const body = document.createElement('div');
+            body.className='card-body';
+            let html = `<h6 class="d-flex align-items-start"><span class="question-number">${idx+1}</span> ${escapeHtml(q.question)}</h6>`;
+            if(q.type==='mcq'){
+                q.options.forEach((opt,i)=>{
+                    html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}">
+                        <input class="form-check-input me-3" type="radio" name="q${q.id}" value="${i}">
+                        <span>${escapeHtml(opt)}</span>
+                    </label>`;
+                });
+            } else {
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="true">True
+                </label>`;
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="false">False
+                </label>`;
+            }
+            html += `<div class="feedback" id="fb${q.id}" style="display:none"></div>`;
+            body.innerHTML = html;
+            card.appendChild(body);
+            qContainer.appendChild(card);
+        });
+
+        // Event
+        qContainer.addEventListener('change',(e)=>{
+            if(e.target.type!=='radio') return;
+            const qid = parseInt(e.target.closest('label').dataset.qid,10);
+            handleAnswer(qid);
+        });
+
+        function handleAnswer(qid){
+            const q = questions.find(x=>x.id===qid);
+            const fb = document.getElementById('fb'+q.id);
+            if(fb.getAttribute('data-answered')==='true') return;
+
+            const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+            if(!sel) return;
+            let userText='', correct=false;
+            if(q.type==='mcq'){ const idx=parseInt(sel.value,10); userText=q.options[idx]; correct=(idx===q.answer); }
+            else { const val=(sel.value==='true'); userText=val?'True':'False'; correct=(val===q.answer); }
+
+            fb.style.display='block';
+            fb.innerHTML=`<strong class="text-${correct?'success':'danger'}">${correct?'<i class="fas fa-check-circle me-1"></i> Correct':'<i class="fas fa-times-circle me-1"></i> Incorrect'}</strong>
+            <div class="mt-1">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+            <div>Correct answer: <strong>${escapeHtml(q.type==='mcq'?q.options[q.answer]:(q.answer?'True':'False'))}</strong></div>
+            <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+            fb.setAttribute('data-answered','true');
+
+            document.querySelectorAll(`#q${q.id} .label-opt`).forEach(l=>l.classList.add('disabled'));
+            if(correct) document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+            else {
+                document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+                sel.closest('label').classList.add('wrong');
+            }
+
+            saved[q.id]=sel.value;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+            answered++; if(correct) score++; updateProgress();
+        }
+
+        function updateProgress(){
+            const pct=Math.round((answered/total)*100);
+            progressBar.style.width=pct+'%';
+            answeredCount.textContent=`Answered: ${answered}/${total}`;
+            scoreMini.textContent=`Score: ${score}`;
+        }
+
+        function finishTest(){
+            clearInterval(timerInterval);
+            const final=document.getElementById('finalResult');
+            final.innerHTML=`<div class="card mt-4">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">Test Completed!</h4>
+                    <div class="display-4 fw-bold text-primary mb-2">${score}/${total}</div>
+                    <p class="text-muted mb-3">Percentage: ${(score/total*100).toFixed(2)}%</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-redo-alt me-2"></i> Try Again
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                            <i class="fas fa-arrow-up me-2"></i> Back to Top
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            final.scrollIntoView({behavior:'smooth'});
+        }
+
+        function autoSubmit(){
+            alert('⏰ Time is up — submitting your test.');
+            finishTest();
+        }
+
+        document.getElementById('finishBtn').addEventListener('click', finishTest);
+        document.getElementById('resetBtn').addEventListener('click', ()=>{
+            if(confirm('Reset all answers?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('clearSaved').addEventListener('click', ()=>{
+            if(confirm('Clear saved data?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('topBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+        function escapeHtml(t){return t?.toString().replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))||'';}
+    </script>
+</body>
+</html>

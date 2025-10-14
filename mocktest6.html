@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI Operator Mock Test - Mock 6</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --body-bg: #f5f7fa;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            padding: 12px;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .navbar .navbar-brand, .navbar .btn, .navbar .text-white {
+            color: white !important;
+        }
+
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-question {
+            background: var(--card-bg);
+        }
+
+        .label-opt {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 5px 0;
+            padding: 12px 15px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .label-opt:hover {
+            background: #f1f3f5;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .label-opt.correct {
+            background-color: #d1e7dd !important;
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .label-opt.wrong {
+            background-color: #f8d7da !important;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        .label-opt.disabled {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .feedback {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .timer-badge {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            font-weight: bold;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            color: white;
+        }
+
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .question-nav {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .question-nav .btn {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .floating-nav .btn {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .label-opt {
+                padding: 10px 12px;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <i class="fas fa-id-card-alt me-2"></i>
+                UIDAI Operator Mock Test - Mock 6
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <div class="text-end me-2">
+                    <div class="small text-light">Time left</div>
+                    <div id="timer" class="timer-badge">60:00</div>
+                </div>
+                <button id="clearSaved" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-trash-alt me-1"></i> Clear Saved
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card mb-4 stats-card">
+            <div class="card-body">
+                <h5 class="card-title d-flex align-items-center">
+                    <i class="fas fa-tasks me-2"></i> UIDAI Operator Mock Test — 50 Questions
+                </h5>
+                <p class="card-text">Your answers are saved automatically. Immediate feedback is shown after each question.</p>
+                <div class="progress mt-3">
+                    <div id="progressBar" class="progress-bar bg-success" style="width:0%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-white">
+                    <div id="answeredCount" class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-1"></i> Answered: 0
+                    </div>
+                    <div id="scoreMini" class="score-display">
+                        <i class="fas fa-star me-1"></i> Score: 0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            <div id="questions"></div>
+            
+            <div class="question-nav d-flex gap-2 my-4">
+                <button type="button" id="finishBtn" class="btn btn-success action-btn flex-fill">
+                    <i class="fas fa-flag-checkered me-2"></i> Finish & Submit
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary action-btn">
+                    <i class="fas fa-redo-alt me-2"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <div id="finalResult"></div>
+    </div>
+
+    <div class="floating-nav">
+        <button type="button" id="topBtn" class="btn btn-primary">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'mocktest6_answers_v1';
+        const TIME_KEY = 'mocktest6_time_v1';
+
+        // Timer
+        let totalSeconds = parseInt(localStorage.getItem(TIME_KEY) || '3600',10);
+        const timerEl = document.getElementById('timer');
+        let timerInterval = setInterval(tick,1000);
+        function tick(){
+            totalSeconds--;
+            if(totalSeconds < 0){ clearInterval(timerInterval); autoSubmit(); return; }
+            localStorage.setItem(TIME_KEY, String(totalSeconds));
+            const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+            const s = String(totalSeconds%60).padStart(2,'0');
+            timerEl.textContent = `${m}:${s}`;
+        }
+
+        // Questions for Mock Test 6
+        const questions = [
+            {id:1,type:'mcq',question:'Which of the following should an operator/supervisor must ensure when checking resident\'s Aadhaar enrolment or Update form?',options:['Has resident\'s thumbprint','Has operator\'s thumbprint','Has verifier\'s signature','Has the introducer\'s or HOF\'s signature'],answer:2,explanation:'Verifier\'s signature is required on the enrolment/update form.'},
+            {id:2,type:'tf',question:'Operator should make sure that the resident\'s screen is off when capturing his/her biometrics and Iris.',answer:false,explanation:'Resident should be able to see the screen during biometric capture for transparency.'},
+            {id:3,type:'tf',question:'Operator should ask the resident to cross check the data being entered and review demographic data with resident before signing off.',answer:true,explanation:'Residents should verify their demographic data before final submission.'},
+            {id:4,type:'mcq',question:'In case of Anganwadi Asha worker who wants to be a CELC operator, what should be his/her minimum qualification?',options:['10th Pass','12th Pass','Graduate','Diploma holder'],answer:0,explanation:'10th pass is the minimum qualification for CELC operator.'},
+            {id:5,type:'mcq',question:'Who among the following has the authority to approve or reject the onboarding of operators?',options:['Any other operator','UIDAI Regional Office','Supervisor','Resident'],answer:1,explanation:'UIDAI Regional Office approves or rejects operator onboarding.'},
+            {id:6,type:'mcq',question:'Which of the following is used to enrol a child?',options:['CELC tablet','Any desktop computer with CELC client installed','Any laptop with CELC client installed','Enrolment form'],answer:0,explanation:'CELC tablet is used for child enrolment.'},
+            {id:7,type:'mcq',question:'Which of the following is done to add a CELC operator in the Aadhaar client software?',options:['Take the operator\'s original identity proof documents','Take the operator\'s signature','Take the operator\'s biometrics','Take the operator\'s original qualification certificates'],answer:2,explanation:'CELC operator\'s biometrics are captured for authentication.'},
+            {id:8,type:'mcq',question:'Who is a verifier?',options:['One who verifies if the given biometrics are right','One who verifies the documents and Enrolment/Update Form submitted by the resident','One who verifies that the resident is enrolling for the first time','One who ensures that the resident is at least a graduate before enrolling'],answer:1,explanation:'Verifier checks documents and enrolment forms submitted by residents.'},
+            {id:9,type:'mcq',question:'Who among the following are well suited for the role of verifier?',options:['Private school teachers','Retired Government officials','Well-educated housewives','Military personnel'],answer:1,explanation:'Retired government officials are well-suited for verifier roles.'},
+            {id:10,type:'mcq',question:'Which of the following documents submitted by resident is acceptable for verification purpose as POA?',options:['Original educational qualification documents','Photocopy of PAN card attested by a Gazetted officer','Electricity bill not older than 3 months','All the given options'],answer:2,explanation:'Electricity bill not older than 3 months is acceptable as POA.'},
+            {id:11,type:'mcq',question:'In which of the following instances can a verifier refuse verification?',options:['If he finds that the details in a document are edited','If the photocopy of education qualification certificate is submitted','If the resident submits electricity bill as proof of address','Both 1 and 2'],answer:3,explanation:'Verifier can refuse if documents are edited or if photocopies of education certificates are submitted.'},
+            {id:12,type:'mcq',question:'Pol requires a document containing the resident\'s name and ______.',options:['Mobile number','Residential address','E-mail address','Photograph'],answer:3,explanation:'Proof of Identity requires name and photograph.'},
+            {id:13,type:'mcq',question:'A resident approached you for Aadhaar enrolment. The resident\'s name in the POI is Chandra Prasad, whereas in the POA, it is Chandra Shekar. What would you do in such a case?',options:['Enter the name as Chandra Prasad','Enter the name as Chandra Shekar','Enter the name as Chandra Shekar Prasad','Reject the application'],answer:3,explanation:'Application should be rejected if names in POI and POA don\'t match.'},
+            {id:14,type:'mcq',question:'What would you do in case the two documentary proofs produced by the enrollee have variation in the same name?',options:['Enter the name as given in educational qualification','Enter the resident\'s full name','Enter the name as suggested by the resident','Enter the name as recorded in POA document'],answer:1,explanation:'Resident\'s full name should be recorded in case of variations.'},
+            {id:15,type:'mcq',question:'Which of the following should operator do before taking his role as operator?',options:['Complete his studies and not engage in any other education- related activities during his tenure','Read the complete Training Material on Aadhaar Enrolment/Upd ate available on Authority\'s website and get certified','Get trained on software technologies like C and Java','All the given options'],answer:1,explanation:'Operators must read training material and get certified before starting.'},
+            {id:16,type:'tf',question:'Supervisor must ensure that staff at the centre do not ask for any additional money except for the prescribed fee.',answer:true,explanation:'Supervisors must prevent unauthorized charging of fees.'},
+            {id:17,type:'mcq',question:'Any serving /retired official both from Government and PSUs including Banks not below the rank of ______ may be allowed to be deployed as verifiers.',options:['Group A','Group B','Group C','Managers'],answer:2,explanation:'Group C or above officials can be deployed as verifiers.'},
+            {id:18,type:'mcq',question:'Which of the following items of information is only collected for records and no verification will be carried out?',options:['Information on parents, in case of adults','Information on education qualifications','Information related to address in case of child','Information related to parents in case of a child'],answer:0,explanation:'Parent information for adults is collected for records only.'},
+            {id:19,type:'mcq',question:'Which of the following should be done to establish the relationship between HoF and the family members?',options:['Verify the POR document','Interview the family members','Ask for DNA report','Verify with the neighbours of the family'],answer:0,explanation:'Proof of Relationship document establishes HoF relationship.'},
+            {id:20,type:'tf',question:'Head of Family must always accompany the family member when the family member is getting enrolled.',answer:true,explanation:'HoF must accompany family members for HoF-based enrolment.'},
+            {id:21,type:'tf',question:'It is not mandatory to verify the HoF details in the Enrolment/Update Form in case of HoF-based verification.',answer:false,explanation:'HoF details must be verified in HoF-based verification.'},
+            {id:22,type:'tf',question:'It is not essential to mention the relationship details in case of HoF-based enrolments.',answer:false,explanation:'Relationship details are essential in HoF-based enrolments.'},
+            {id:23,type:'tf',question:'In case of Introducer-based enrolment, only introducer\'s name as additional information is required.',answer:false,explanation:'Multiple introducer details are required, not just name.'},
+            {id:24,type:'tf',question:'It is mandatory to note the religion and caste when enrolling a resident for Aadhaar.',answer:false,explanation:'Religion and caste are not collected for Aadhaar.'},
+            {id:25,type:'tf',question:'In case of Head of Family based enrolment, the HOF\'s Aadhaar number should be verified against his/her Aadhaar letter.',answer:true,explanation:'HoF Aadhaar number must be verified against Aadhaar letter.'},
+            {id:26,type:'tf',question:'Residential address is an additional demographic information required for enrolment.',answer:false,explanation:'Residential address is mandatory, not additional.'},
+            {id:27,type:'mcq',question:'Who among the following can be an "Introducer"?',options:['Registrar\'s employee','Head of the family','Any Indian citizen','A farmer'],answer:0,explanation:'Registrar\'s employees can be introducers.'},
+            {id:28,type:'tf',question:'Name is a demographic information required to be provided during enrolment.',answer:true,explanation:'Name is mandatory demographic information.'},
+            {id:29,type:'tf',question:'Gender is a demographic information required to be provided during enrolment.',answer:true,explanation:'Gender is mandatory demographic information.'},
+            {id:30,type:'tf',question:'The operator should take the resident\'s mobile number mandatorily and enter the same in enrolment form.',answer:false,explanation:'Mobile number is optional, not mandatory.'},
+            {id:31,type:'tf',question:'An operator should capture GPS coordinates at the start of enrolment every day.',answer:true,explanation:'GPS coordinates must be captured daily at start.'},
+            {id:32,type:'mcq',question:'Which of the following demographic information shall be collected from all individuals undergoing enrolment, other than children below five years of age?',options:['Name, Mobile number Height, Eye colour','Name Gender, Birth certificate, Mother\'s birth certificate','Name, Date of birth, Gender, Residential address','Name, Place, Height, Mobile number'],answer:2,explanation:'Name, DOB, Gender, and Address are mandatory for adults.'},
+            {id:33,type:'mcq',question:'A resident, Bhaktiyar Rahul Sharma has approached you for enrollment. Which of the following is the right way for entering his name in the system?',options:['B. R Sharma','B. Rahul Sharma','Bhaktiyar Rahul Sharma','BRS'],answer:2,explanation:'Full name should be entered as declared by resident.'},
+            {id:34,type:'mcq',question:'Sukumar Raj Pal has approached you to get enrolled for Aadhaar. You find that his graduation certificate, which is submitted as POI has Sukumar Raj Pal and whereas electricity bill, which is submitted as POA has Raj Sukumar Pal. In this case, what should',options:['RS Pal','Raj Sukumar Pal','Sukumar Raj Pal','As declared by the resident'],answer:3,explanation:'Name should be entered as declared by the resident.'},
+            {id:35,type:'mcq',question:'Which of the following should an operator ensure before starting his/her day?',options:['I, II and III','I and III','III and IV','I, II and IV'],answer:3,explanation:'Ensure date/time, capture GPS, and station layout as per guidelines.'},
+            {id:36,type:'mcq',question:'The Authority may authorise Registrars to charge ______ from the residents, not exceeding an amount specified by the Authority, for update of demographic information and biometric information.',options:['Convenience fee','Registrar fee','Observer\'s fee','Introducer\'s fee'],answer:0,explanation:'Convenience fee may be charged for updates.'},
+            {id:37,type:'mcq',question:'Which of the following software can be used for updating Mobile number or email ID?',options:['Update Client Lite','ECMP','CELP','None of the given'],answer:0,explanation:'Update Client Lite is used for mobile/email updates.'},
+            {id:38,type:'mcq',question:'The Authority shall require the biometric information of children to be updated upon attaining ______ of age and ______ of age in accordance with the procedure specified by the Authority, which is a mandatory update for children.',options:['Two years, twelve years','Five years, fifteen years','Ten years, eighteen years','Four years, sixteen years'],answer:1,explanation:'Biometric update required at 5 and 15 years of age.'},
+            {id:39,type:'mcq',question:'Which of the following should operator ensure during enrolment or update process?',options:['Enrolment or update form is uploaded','Supporting documents and signed slips are uploaded','All documents are returned to the resident after enrolment','All the given options'],answer:3,explanation:'All listed actions should be ensured during enrolment/update.'},
+            {id:40,type:'mcq',question:'What is the key responsibility of a CELC operator?',options:['To check Enrolment and update Form only','To enrol or update only'],answer:1,explanation:'CELC operator\'s key responsibility is enrolment/update.'},
+            {id:41,type:'mcq',question:'Which of the following software can be used for updating demographic or biometric details?',options:['Update Client Lite','ECMP','CELP','API'],answer:1,explanation:'ECMP is used for demographic/biometric updates.'},
+            {id:42,type:'mcq',question:'Which of the following certificates a CELC operator should have obtained?',options:['Diploma in Software Technology','Certificate in Basics of Computers','CELC Operator Certificate','Enrolment Operator Certificate'],answer:2,explanation:'CELC Operator Certificate is required.'},
+            {id:43,type:'mcq',question:'Which of the following statements is TRUE about Introducers?',options:['I, III and V','I, II, IV and V','II and IV','II, IV and V'],answer:1,explanation:'Introducers are linked to Registrar, no criminal record, above 18, within jurisdiction.'},
+            {id:44,type:'tf',question:'The Verifier should ensure that the name in the PoA document matches with the name in the Pol document.',answer:true,explanation:'Names in PoA and PoI should match.'},
+            {id:45,type:'mcq',question:'Whose name should be given in "Care of" field?',options:['Child\'s name','Any person who is 18 years old and above','Mother\'s name','Head of the family'],answer:3,explanation:'Head of Family name should be in "Care of" field.'},
+            {id:46,type:'mcq',question:'Which of the following is mandatory when enrolling a child?',options:['Parent\'s Aadhaar number','Parent\'s educational qualification certificate','A signature of gazetted officer on child\'s birth certificate','Introduction from an introducer'],answer:0,explanation:'Parent\'s Aadhaar number is mandatory for child enrolment.'},
+            {id:47,type:'mcq',question:'Which of the following is an unacceptable act from the introducer?',options:['Helping a resident enrol for Aadhaar','Introducing the resident to the Aadhaar operator','Confirm the identity and address of the resident','Helping resident to impersonate his father'],answer:3,explanation:'Helping impersonation is unacceptable.'},
+            {id:48,type:'tf',question:'Introducers have to provide their biometric on Aadhaar client to endorse a resident\'s enrolment.',answer:true,explanation:'Introducers provide biometric endorsement.'},
+            {id:49,type:'mcq',question:'Other service providers may be appointed or engaged by the Authority from time to time for discharging any function related to the ______ enrolment process or updating of information.',options:['Biometric','Audit','Identity proof','Resident'],answer:3,explanation:'Service providers assist with resident enrolment process.'},
+            {id:50,type:'mcq',question:'The Authority shall provide ______ using which the Registrar can onboard an empanelled enrolling agency to the CIDR.',options:['Database of resident details','Enrolment ID','Open Request for Empanelment','Enrolling Agency Code'],answer:3,explanation:'Enrolling Agency Code is provided for CIDR onboarding.'}
+        ];
+
+        const qContainer = document.getElementById('questions');
+        let answered = 0, score = 0, total = questions.length;
+        const progressBar = document.getElementById('progressBar');
+        const answeredCount = document.getElementById('answeredCount');
+        const scoreMini = document.getElementById('scoreMini');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Render
+        questions.forEach((q, idx)=>{
+            const card = document.createElement('div');
+            card.className='card mb-4 card-question';
+            card.id='q'+q.id;
+            const body = document.createElement('div');
+            body.className='card-body';
+            let html = `<h6 class="d-flex align-items-start"><span class="question-number">${idx+1}</span> ${escapeHtml(q.question)}</h6>`;
+            if(q.type==='mcq'){
+                q.options.forEach((opt,i)=>{
+                    html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}">
+                        <input class="form-check-input me-3" type="radio" name="q${q.id}" value="${i}">
+                        <span>${escapeHtml(opt)}</span>
+                    </label>`;
+                });
+            } else {
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="true">True
+                </label>`;
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="false">False
+                </label>`;
+            }
+            html += `<div class="feedback" id="fb${q.id}" style="display:none"></div>`;
+            body.innerHTML = html;
+            card.appendChild(body);
+            qContainer.appendChild(card);
+        });
+
+        // Event
+        qContainer.addEventListener('change',(e)=>{
+            if(e.target.type!=='radio') return;
+            const qid = parseInt(e.target.closest('label').dataset.qid,10);
+            handleAnswer(qid);
+        });
+
+        function handleAnswer(qid){
+            const q = questions.find(x=>x.id===qid);
+            const fb = document.getElementById('fb'+q.id);
+            if(fb.getAttribute('data-answered')==='true') return;
+
+            const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+            if(!sel) return;
+            let userText='', correct=false;
+            if(q.type==='mcq'){ const idx=parseInt(sel.value,10); userText=q.options[idx]; correct=(idx===q.answer); }
+            else { const val=(sel.value==='true'); userText=val?'True':'False'; correct=(val===q.answer); }
+
+            fb.style.display='block';
+            fb.innerHTML=`<strong class="text-${correct?'success':'danger'}">${correct?'<i class="fas fa-check-circle me-1"></i> Correct':'<i class="fas fa-times-circle me-1"></i> Incorrect'}</strong>
+            <div class="mt-1">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+            <div>Correct answer: <strong>${escapeHtml(q.type==='mcq'?q.options[q.answer]:(q.answer?'True':'False'))}</strong></div>
+            <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+            fb.setAttribute('data-answered','true');
+
+            document.querySelectorAll(`#q${q.id} .label-opt`).forEach(l=>l.classList.add('disabled'));
+            if(correct) document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+            else {
+                document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+                sel.closest('label').classList.add('wrong');
+            }
+
+            saved[q.id]=sel.value;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+            answered++; if(correct) score++; updateProgress();
+        }
+
+        function updateProgress(){
+            const pct=Math.round((answered/total)*100);
+            progressBar.style.width=pct+'%';
+            answeredCount.textContent=`Answered: ${answered}/${total}`;
+            scoreMini.textContent=`Score: ${score}`;
+        }
+
+        function finishTest(){
+            clearInterval(timerInterval);
+            const final=document.getElementById('finalResult');
+            final.innerHTML=`<div class="card mt-4">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">Test Completed!</h4>
+                    <div class="display-4 fw-bold text-primary mb-2">${score}/${total}</div>
+                    <p class="text-muted mb-3">Percentage: ${(score/total*100).toFixed(2)}%</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-redo-alt me-2"></i> Try Again
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                            <i class="fas fa-arrow-up me-2"></i> Back to Top
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            final.scrollIntoView({behavior:'smooth'});
+        }
+
+        function autoSubmit(){
+            alert('⏰ Time is up — submitting your test.');
+            finishTest();
+        }
+
+        document.getElementById('finishBtn').addEventListener('click', finishTest);
+        document.getElementById('resetBtn').addEventListener('click', ()=>{
+            if(confirm('Reset all answers?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('clearSaved').addEventListener('click', ()=>{
+            if(confirm('Clear saved data?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('topBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+        function escapeHtml(t){return t?.toString().replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))||'';}
+    </script>
+</body>
+</html>

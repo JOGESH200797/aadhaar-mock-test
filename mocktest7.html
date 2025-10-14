@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI Operator Mock Test - Mock 7</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --body-bg: #f5f7fa;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            padding: 12px;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .navbar .navbar-brand, .navbar .btn, .navbar .text-white {
+            color: white !important;
+        }
+
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-question {
+            background: var(--card-bg);
+        }
+
+        .label-opt {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 5px 0;
+            padding: 12px 15px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .label-opt:hover {
+            background: #f1f3f5;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .label-opt.correct {
+            background-color: #d1e7dd !important;
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .label-opt.wrong {
+            background-color: #f8d7da !important;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        .label-opt.disabled {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .feedback {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .timer-badge {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            font-weight: bold;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            color: white;
+        }
+
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .question-nav {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .question-nav .btn {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .floating-nav .btn {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .label-opt {
+                padding: 10px 12px;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <i class="fas fa-id-card-alt me-2"></i>
+                UIDAI Operator Mock Test - Mock 7
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <div class="text-end me-2">
+                    <div class="small text-light">Time left</div>
+                    <div id="timer" class="timer-badge">60:00</div>
+                </div>
+                <button id="clearSaved" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-trash-alt me-1"></i> Clear Saved
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card mb-4 stats-card">
+            <div class="card-body">
+                <h5 class="card-title d-flex align-items-center">
+                    <i class="fas fa-tasks me-2"></i> UIDAI Operator Mock Test — 50 Questions
+                </h5>
+                <p class="card-text">Your answers are saved automatically. Immediate feedback is shown after each question.</p>
+                <div class="progress mt-3">
+                    <div id="progressBar" class="progress-bar bg-success" style="width:0%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-white">
+                    <div id="answeredCount" class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-1"></i> Answered: 0
+                    </div>
+                    <div id="scoreMini" class="score-display">
+                        <i class="fas fa-star me-1"></i> Score: 0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            <div id="questions"></div>
+            
+            <div class="question-nav d-flex gap-2 my-4">
+                <button type="button" id="finishBtn" class="btn btn-success action-btn flex-fill">
+                    <i class="fas fa-flag-checkered me-2"></i> Finish & Submit
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary action-btn">
+                    <i class="fas fa-redo-alt me-2"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <div id="finalResult"></div>
+    </div>
+
+    <div class="floating-nav">
+        <button type="button" id="topBtn" class="btn btn-primary">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'mocktest7_answers_v1';
+        const TIME_KEY = 'mocktest7_time_v1';
+
+        // Timer
+        let totalSeconds = parseInt(localStorage.getItem(TIME_KEY) || '3600',10);
+        const timerEl = document.getElementById('timer');
+        let timerInterval = setInterval(tick,1000);
+        function tick(){
+            totalSeconds--;
+            if(totalSeconds < 0){ clearInterval(timerInterval); autoSubmit(); return; }
+            localStorage.setItem(TIME_KEY, String(totalSeconds));
+            const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+            const s = String(totalSeconds%60).padStart(2,'0');
+            timerEl.textContent = `${m}:${s}`;
+        }
+
+        // Questions for Mock Test 7
+        const questions = [
+            {id:1,type:'mcq',question:'What is the waiting time for Aadhaar generation?',options:['1 to 2 weeks','Within 7 days','upto 90 days','6 months'],answer:2,explanation:'Aadhaar generation can take up to 90 days.'},
+            {id:2,type:'mcq',question:'What are the different types of Aadhaar Enrolment?',options:['Document-based enrolment','Document Based, Introducer Based, Head of Family Based and Child Enrolment','Physical Enrolment','Online Enrolment'],answer:1,explanation:'Four types: Document-based, Introducer-based, HoF-based, and Child enrolment.'},
+            {id:3,type:'mcq',question:'Which form needs to be filled by the resident for Aadhaar Enrolment?',options:['Aadhaar Enrolment/Correction Form','Matriculation Form','Registration Form','Application Form'],answer:0,explanation:'Aadhaar Enrolment/Correction Form is used.'},
+            {id:4,type:'tf',question:'Mutiple Aadhaar Numbers are generated in case of mutiple Enrolments',answer:false,explanation:'Only one Aadhaar number is issued per resident.'},
+            {id:5,type:'tf',question:'Aadhaar Number will be generated in 1 day',answer:false,explanation:'Aadhaar generation takes up to 90 days.'},
+            {id:6,type:'mcq',question:'Acknowledgement Slip provided to the resident after Aadhaar Enrolment contains ______',options:['EID (Enrolment ID)','Aadhaar Number','Photo of Enrolment Operator','Photo of Proof of Address and Proof of Identity'],answer:0,explanation:'Acknowledgement slip contains EID (Enrolment ID).'},
+            {id:7,type:'tf',question:'There is only one type of Aadhaar Enrolment i.e Document Based Enrolment',answer:false,explanation:'There are multiple types of enrolment.'},
+            {id:8,type:'mcq',question:'Who among the following is eligible to avail Aadhaar?',options:['Any citizen of India','Any individual who is 18 years and above','Any resident who resided in India for a period of 182 days or more','Any citizen of India who is a graduate'],answer:2,explanation:'Residents residing in India for 182+ days are eligible.'},
+            {id:9,type:'tf',question:'Any resident who resided in India for a period of 182 days or more who posses required documents is eligible for Aadhaar Enrolment',answer:true,explanation:'182+ days residence with documents makes one eligible.'},
+            {id:10,type:'tf',question:'Any citizen of India, even those who have been residing in a foreign country for the last one year, are eligible for Aadhaar.',answer:false,explanation:'Must be residing in India for eligibility.'},
+            {id:11,type:'tf',question:'Any resident who do not have any document or eligible for other types of enrolment can also be enrolled',answer:false,explanation:'Documents or alternative verification methods are required.'},
+            {id:12,type:'tf',question:'In case of omission of Aadhaar number for reasons other than multiple Aadhaar numbers having been issued, residents shall be required to re-enrol.',answer:true,explanation:'Re-enrolment required for omission cases.'},
+            {id:13,type:'mcq',question:'Which of the following are mandatory in Document-based Enrolment?',options:['The resident submits his POI (mandatory), POA (mandatory) and POR (optional)','An elected local body introduces the resident to the operator','The father introduces his child','All the given options'],answer:0,explanation:'POI and POA mandatory, POR optional in document-based enrolment.'},
+            {id:14,type:'mcq',question:'In which of the following types of enrolments involves resident submitting POI, POA and POR documents?',options:['Document-based enrolment','Introducer- based enrolment','Head of the family based enrolment','Child enrolment'],answer:0,explanation:'Document-based enrolment requires POI, POA, and optional POR.'},
+            {id:15,type:'mcq',question:'Which of the following items of information related to introducer is captured in introducer-based enrolment?',options:['I, II and III','II, III and IV','I, II and V','All the given options'],answer:2,explanation:'Introducer\'s name, Aadhaar number, and biometric info are captured.'},
+            {id:16,type:'mcq',question:'Who can become Introducer for facilitating Introducer Based Enrolment?',options:['Operator/Supervisor','(a) Registrars\' Employees (b) Elected local body members (c) Members of local administrative bodies','(a) Influencers such as teachers (b) Anganwadi Worker (c) Representative of NGO','Both (2) & (3)'],answer:3,explanation:'Both government officials and community influencers can be introducers.'},
+            {id:17,type:'tf',question:'Can Operator/Supervisor can become Introducer?',answer:false,explanation:'Operators/Supervisors cannot serve as introducers.'},
+            {id:18,type:'mcq',question:'Which of the following refers to introducer-based enrolment?',options:['The resident submits his POI, POA and POR documents','A health worker refers the resident to the operator','The father introduces his child','All the given options'],answer:1,explanation:'Health worker referral is an example of introducer-based enrolment.'},
+            {id:19,type:'mcq',question:'Who among the following is eligible for child enrolment?',options:['Any child who is at least 4 years old and above','Any child who is attending school','Any child who is less than 5 years of age','Any child who is between 5 and 16 years of age'],answer:2,explanation:'Children below 5 years are eligible for child enrolment.'},
+            {id:20,type:'tf',question:'Any adult can be enrolled as a Child without capturing the Biometric Information, if the resident suggest.',answer:false,explanation:'Adults cannot be enrolled as children.'},
+            {id:21,type:'tf',question:'Biometric information is required for enrolment from all individuals including children below 5 years of age.',answer:false,explanation:'Biometrics not required for children below 5 years.'},
+            {id:22,type:'mcq',question:'Which of the following information is NOT required when enrolling for Aadhaar?',options:['Caste','Name','Address','Age'],answer:0,explanation:'Caste information is not collected for Aadhaar.'},
+            {id:23,type:'mcq',question:'Which of the following items of information is captured in HOF-based enrolment?',options:['I, II and III','II, III and IV','I and IV','All the given options'],answer:3,explanation:'All listed information is captured in HoF-based enrolment.'},
+            {id:24,type:'mcq',question:'What are the mandatory Document for Head of the Family based enrolment?',options:['Proof of Relation (PoR) of resident and Head of the Family','Head of Family Aadhaar Number','Qualification Proof of Resident','Both (1) & (2)'],answer:3,explanation:'PoR and HoF Aadhaar number are mandatory.'},
+            {id:25,type:'mcq',question:'What are the mandatory Document for Child Enrolment?',options:['Date of Birth Proof','Aadhaar Number of any one parent','Proof of Relation of child and parent','All the given options'],answer:3,explanation:'All listed documents are mandatory for child enrolment.'},
+            {id:26,type:'mcq',question:'What address will be mentioned in the Enrolment Form in case of Child Enrolment?',options:['Address of Enrolment Center','Address of the linked parent','Address of Hospital where the child is born','All the given options'],answer:1,explanation:'Parent\'s address is used for child enrolment.'},
+            {id:27,type:'tf',question:'Operator can charge any amount as he wants for the Aadhaar Enrolment',answer:false,explanation:'Only prescribed fees can be charged.'},
+            {id:28,type:'tf',question:'Cost of Fresh Enrolment and Mandatory Biometric update are charged from the resident',answer:false,explanation:'Fresh enrolment and mandatory biometric updates are free.'},
+            {id:29,type:'mcq',question:'What actions will be taken against the Operator/Supervisor for charging more amount of money as prescribed by the Authority?',options:['Blacklisting','FIR','Warning','Either (1) & (2)'],answer:3,explanation:'Blacklisting and/or FIR can be filed for overcharging.'},
+            {id:30,type:'mcq',question:'Which of the following refers to biometric details of a resident?',options:['Facial image','All ten fingerprints','Scans of both irises','All of the given'],answer:3,explanation:'All listed are biometric details captured.'},
+            {id:31,type:'mcq',question:'Which of the following refer to demographic details of a resident?',options:['Email ID and Mobile Number','Finger impression','Iris scan','All the given options'],answer:0,explanation:'Email and mobile are demographic details.'},
+            {id:32,type:'mcq',question:'Demographic Information required for Aadhaar Enrolment include the following',options:['Race and Caste','Name, Address, Gender , Date of Birth, email and mobile number','Income of resident','Medical history of resident'],answer:1,explanation:'Name, address, gender, DOB, email, mobile are demographic details.'},
+            {id:33,type:'mcq',question:'The enrolment operator shall ______.',options:['Collect hard copies of supporting documents submitted by the resident along with the Enrolment Form','Capture the biometric information, Demographic Information using the Enrolment software provided or approved by the Authority','Scan and store the hard copies with biometric and demographic details submitted by the resident in local harddisk','Collect and record the demographic information in physical register'],answer:1,explanation:'Operator captures biometric and demographic info using approved software.'},
+            {id:34,type:'mcq',question:'Which of the following requires mandatory update?',options:['Correcting the name of the resident','Updating the email Id','Biometric information of child who has attained 5 years of age','Updating phone number'],answer:2,explanation:'Biometric update at age 5 is mandatory for children.'},
+            {id:35,type:'mcq',question:'What is de-duplication process in Aadhaar Generation Process?',options:['Checking and rejecting any duplicate enrolments','Copying the enrolment information as backup','Checking if any other person has the same address and rejecting the same','All the given options'],answer:0,explanation:'De-duplication checks for and rejects duplicate enrolments.'},
+            {id:36,type:'mcq',question:'Identify the correct order of Aadhaar generation process.',options:['II, III, V, I and IV','III, I, IV, V and II','II, V, I, III and IV','II, I, V, III and V'],answer:2,explanation:'Upload to CIDR, process data, reject duplicates, generate number, communicate to resident.'},
+            {id:37,type:'mcq',question:'In the event a resident does not possess any of the required supporting documents of proof, enrolment may be carried out through the ______ mode (s)',options:['Introducer-based enrolment, Head of Family (HoF) based enrolment','Operator-based enrolment, Other enrolments','Software provided enrolment, Electronic format-based enrolment','EID-based enrolment, Authority Based enrolment'],answer:0,explanation:'Introducer-based or HoF-based enrolment for those without documents.'},
+            {id:38,type:'mcq',question:'Mandatory biometric update for child is ______.',options:['Free of cost','Rs. 10','Rs. 15','Rs. 20'],answer:0,explanation:'Mandatory biometric update for children is free.'},
+            {id:39,type:'mcq',question:'In which of the following modes should be used resident to update his/her biometric details?',options:['Online mode','Visiting enrolment centre','All the given options'],answer:1,explanation:'Biometric updates require visiting enrolment centre.'},
+            {id:40,type:'mcq',question:'How can a resident track the status of updates made to his/her Aadhaar details on Authority\'s website?',options:['Using Aadhaar Number only','Using EID printed on Aknowlegement Slip or URN generated through SSUP portal','Using mobile number only','Details will be sent to the resident\'s email ID'],answer:1,explanation:'EID or URN can be used to track update status.'},
+            {id:41,type:'mcq',question:'The Aadhaar number may be communicated to residents in physical form, which includes ______.',options:['E-mail','Website','SMS','Letter'],answer:3,explanation:'Aadhaar number is communicated via physical letter.'},
+            {id:42,type:'mcq',question:'Aadhaar Update request at Enrolment Center is confirmed only after ______ of the resident.',options:['Aadhaar based Biometric Confirmation','Signature','Photograph of the resident','Verbal Confirmation'],answer:0,explanation:'Biometric confirmation is required for update requests.'},
+            {id:43,type:'mcq',question:'Email Id and Mobile Number can be updated in Aadhaar Database by following mode?',options:['Visiting Enrolment Center','SSUP Portal','Both the given options'],answer:0,explanation:'Email and mobile updates require visiting enrolment centre.'},
+            {id:44,type:'mcq',question:'Address of the resident can be updated in Aadhaar Database by following mode(s)',options:['Visiting Enrolment Center','SSUP Portal','All the given options'],answer:2,explanation:'Address can be updated both online and at enrolment centres.'},
+            {id:45,type:'tf',question:'Registered Mobile Number of the resident is mandatory to update Address through Online Mode- SSUP Portal',answer:true,explanation:'Registered mobile is required for online address update.'},
+            {id:46,type:'mcq',question:'Registered Mobile Number of the resident is mandatory to update new mobile number through Online Mode- SSUP Portal',options:['Mobile Number cannot be updated using SSUP Portal','Not required','Required','All the given options'],answer:0,explanation:'Mobile numbers cannot be updated via SSUP portal.'},
+            {id:47,type:'mcq',question:'OTP (One time password) is sent on which mobile number while submitting the Address update through SSUP Portal',options:['Mobile Number registered in Aadhaar','Mobile Number of Operator/Supervisor','Mobile Number of Spouse/Gaurdian','All the given options'],answer:0,explanation:'OTP is sent to registered mobile number.'},
+            {id:48,type:'tf',question:'Operator/Supervisor may update his/her own mobile number for all the update done by him/her.',answer:false,explanation:'Operators cannot update their own mobile numbers for updates.'},
+            {id:49,type:'tf',question:'Operator /Supervisor may add additional information in the system without resident consent',answer:false,explanation:'Additional information cannot be added without resident consent.'},
+            {id:50,type:'mcq',question:'Resident can get the updated Aadhaar through following modes using registered mobile number',options:['Download e- aadhaar','Download m- aadhaar','Visit nearest cyber café','Both (1) & (2)'],answer:3,explanation:'Both e-Aadhaar and m-Aadhaar can be downloaded.'}
+        ];
+
+        const qContainer = document.getElementById('questions');
+        let answered = 0, score = 0, total = questions.length;
+        const progressBar = document.getElementById('progressBar');
+        const answeredCount = document.getElementById('answeredCount');
+        const scoreMini = document.getElementById('scoreMini');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Render
+        questions.forEach((q, idx)=>{
+            const card = document.createElement('div');
+            card.className='card mb-4 card-question';
+            card.id='q'+q.id;
+            const body = document.createElement('div');
+            body.className='card-body';
+            let html = `<h6 class="d-flex align-items-start"><span class="question-number">${idx+1}</span> ${escapeHtml(q.question)}</h6>`;
+            if(q.type==='mcq'){
+                q.options.forEach((opt,i)=>{
+                    html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}">
+                        <input class="form-check-input me-3" type="radio" name="q${q.id}" value="${i}">
+                        <span>${escapeHtml(opt)}</span>
+                    </label>`;
+                });
+            } else {
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="true">True
+                </label>`;
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="false">False
+                </label>`;
+            }
+            html += `<div class="feedback" id="fb${q.id}" style="display:none"></div>`;
+            body.innerHTML = html;
+            card.appendChild(body);
+            qContainer.appendChild(card);
+        });
+
+        // Event
+        qContainer.addEventListener('change',(e)=>{
+            if(e.target.type!=='radio') return;
+            const qid = parseInt(e.target.closest('label').dataset.qid,10);
+            handleAnswer(qid);
+        });
+
+        function handleAnswer(qid){
+            const q = questions.find(x=>x.id===qid);
+            const fb = document.getElementById('fb'+q.id);
+            if(fb.getAttribute('data-answered')==='true') return;
+
+            const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+            if(!sel) return;
+            let userText='', correct=false;
+            if(q.type==='mcq'){ const idx=parseInt(sel.value,10); userText=q.options[idx]; correct=(idx===q.answer); }
+            else { const val=(sel.value==='true'); userText=val?'True':'False'; correct=(val===q.answer); }
+
+            fb.style.display='block';
+            fb.innerHTML=`<strong class="text-${correct?'success':'danger'}">${correct?'<i class="fas fa-check-circle me-1"></i> Correct':'<i class="fas fa-times-circle me-1"></i> Incorrect'}</strong>
+            <div class="mt-1">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+            <div>Correct answer: <strong>${escapeHtml(q.type==='mcq'?q.options[q.answer]:(q.answer?'True':'False'))}</strong></div>
+            <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+            fb.setAttribute('data-answered','true');
+
+            document.querySelectorAll(`#q${q.id} .label-opt`).forEach(l=>l.classList.add('disabled'));
+            if(correct) document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+            else {
+                document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+                sel.closest('label').classList.add('wrong');
+            }
+
+            saved[q.id]=sel.value;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+            answered++; if(correct) score++; updateProgress();
+        }
+
+        function updateProgress(){
+            const pct=Math.round((answered/total)*100);
+            progressBar.style.width=pct+'%';
+            answeredCount.textContent=`Answered: ${answered}/${total}`;
+            scoreMini.textContent=`Score: ${score}`;
+        }
+
+        function finishTest(){
+            clearInterval(timerInterval);
+            const final=document.getElementById('finalResult');
+            final.innerHTML=`<div class="card mt-4">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">Test Completed!</h4>
+                    <div class="display-4 fw-bold text-primary mb-2">${score}/${total}</div>
+                    <p class="text-muted mb-3">Percentage: ${(score/total*100).toFixed(2)}%</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-redo-alt me-2"></i> Try Again
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                            <i class="fas fa-arrow-up me-2"></i> Back to Top
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            final.scrollIntoView({behavior:'smooth'});
+        }
+
+        function autoSubmit(){
+            alert('⏰ Time is up — submitting your test.');
+            finishTest();
+        }
+
+        document.getElementById('finishBtn').addEventListener('click', finishTest);
+        document.getElementById('resetBtn').addEventListener('click', ()=>{
+            if(confirm('Reset all answers?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('clearSaved').addEventListener('click', ()=>{
+            if(confirm('Clear saved data?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('topBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+        function escapeHtml(t){return t?.toString().replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))||'';}
+    </script>
+</body>
+</html>

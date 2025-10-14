@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UIDAI Operator Mock Test - Mock 5</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #6c757d;
+            --success: #198754;
+            --danger: #dc3545;
+            --warning: #ffc107;
+            --info: #0dcaf0;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --card-bg: #ffffff;
+            --body-bg: #f5f7fa;
+            --border-radius: 12px;
+            --box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            --transition: all 0.3s ease;
+        }
+
+        body {
+            background-color: var(--body-bg);
+            font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+            color: var(--dark);
+            padding: 12px;
+            line-height: 1.6;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+        }
+
+        .navbar .navbar-brand, .navbar .btn, .navbar .text-white {
+            color: white !important;
+        }
+
+        .card {
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            border: none;
+            transition: var(--transition);
+            background-color: var(--card-bg);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+        }
+
+        .card-question {
+            background: var(--card-bg);
+        }
+
+        .label-opt {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin: 5px 0;
+            padding: 12px 15px;
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .label-opt:hover {
+            background: #f1f3f5;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .label-opt.correct {
+            background-color: #d1e7dd !important;
+            border-color: var(--success) !important;
+            box-shadow: 0 0 0 2px rgba(25, 135, 84, 0.2);
+        }
+
+        .label-opt.wrong {
+            background-color: #f8d7da !important;
+            border-color: var(--danger) !important;
+            box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2);
+        }
+
+        .label-opt.disabled {
+            opacity: 0.8;
+            pointer-events: none;
+        }
+
+        .feedback {
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary);
+            padding: 12px 15px;
+            margin-top: 10px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        .timer-badge {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            font-weight: bold;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .progress {
+            height: 12px;
+            border-radius: 10px;
+            background-color: #e9ecef;
+        }
+
+        .progress-bar {
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        details summary {
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .question-number {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background-color: var(--primary);
+            color: white;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-size: 0.9rem;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 600;
+            transition: var(--transition);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .score-display {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, var(--primary), #0a58ca);
+            color: white;
+        }
+
+        .stats-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .question-nav {
+            position: sticky;
+            bottom: 0;
+            background-color: white;
+            padding: 15px;
+            border-top: 1px solid #dee2e6;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+            z-index: 100;
+        }
+
+        .question-nav .btn {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+
+        .floating-nav {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .floating-nav .btn {
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding-left: 10px;
+                padding-right: 10px;
+            }
+            
+            .card-body {
+                padding: 1rem;
+            }
+            
+            .label-opt {
+                padding: 10px 12px;
+            }
+            
+            .navbar-brand {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg mb-4">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="#">
+                <i class="fas fa-id-card-alt me-2"></i>
+                UIDAI Operator Mock Test - Mock 5
+            </a>
+            <div class="d-flex align-items-center gap-2">
+                <div class="text-end me-2">
+                    <div class="small text-light">Time left</div>
+                    <div id="timer" class="timer-badge">60:00</div>
+                </div>
+                <button id="clearSaved" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-trash-alt me-1"></i> Clear Saved
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card mb-4 stats-card">
+            <div class="card-body">
+                <h5 class="card-title d-flex align-items-center">
+                    <i class="fas fa-tasks me-2"></i> UIDAI Operator Mock Test — 50 Questions
+                </h5>
+                <p class="card-text">Your answers are saved automatically. Immediate feedback is shown after each question.</p>
+                <div class="progress mt-3">
+                    <div id="progressBar" class="progress-bar bg-success" style="width:0%"></div>
+                </div>
+                <div class="d-flex justify-content-between mt-2 text-white">
+                    <div id="answeredCount" class="d-flex align-items-center">
+                        <i class="fas fa-check-circle me-1"></i> Answered: 0
+                    </div>
+                    <div id="scoreMini" class="score-display">
+                        <i class="fas fa-star me-1"></i> Score: 0
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="quizForm">
+            <div id="questions"></div>
+            
+            <div class="question-nav d-flex gap-2 my-4">
+                <button type="button" id="finishBtn" class="btn btn-success action-btn flex-fill">
+                    <i class="fas fa-flag-checkered me-2"></i> Finish & Submit
+                </button>
+                <button type="button" id="resetBtn" class="btn btn-outline-secondary action-btn">
+                    <i class="fas fa-redo-alt me-2"></i> Reset
+                </button>
+            </div>
+        </form>
+
+        <div id="finalResult"></div>
+    </div>
+
+    <div class="floating-nav">
+        <button type="button" id="topBtn" class="btn btn-primary">
+            <i class="fas fa-arrow-up"></i>
+        </button>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Storage keys
+        const STORAGE_KEY = 'mocktest5_answers_v1';
+        const TIME_KEY = 'mocktest5_time_v1';
+
+        // Timer
+        let totalSeconds = parseInt(localStorage.getItem(TIME_KEY) || '3600',10);
+        const timerEl = document.getElementById('timer');
+        let timerInterval = setInterval(tick,1000);
+        function tick(){
+            totalSeconds--;
+            if(totalSeconds < 0){ clearInterval(timerInterval); autoSubmit(); return; }
+            localStorage.setItem(TIME_KEY, String(totalSeconds));
+            const m = String(Math.floor(totalSeconds/60)).padStart(2,'0');
+            const s = String(totalSeconds%60).padStart(2,'0');
+            timerEl.textContent = `${m}:${s}`;
+        }
+
+        // Questions for Mock Test 5
+        const questions = [
+            {id:1,type:'mcq',question:'Who among the following had established UIDAI by passing Aadhaar Act, 2016?',options:['State Government','Government of India','Registrars','Enrolment Agency'],answer:1,explanation:'UIDAI was established by the Government of India through the Aadhaar Act, 2016.'},
+            {id:2,type:'mcq',question:'When was UIDAI established as Statutory Authority under Ministry of Electronics and I.T?',options:['28th January, 2009','29th September, 2010','12th September, 2015','12th July, 2016'],answer:3,explanation:'UIDAI was established as a statutory authority on 12th July, 2016.'},
+            {id:3,type:'mcq',question:'Which organisation is responsible for issuing UID?',options:['Election Commission','Planning Commission','MeitY','UIDAI'],answer:3,explanation:'UIDAI is responsible for issuing Unique Identification numbers (UID).'},
+            {id:4,type:'mcq',question:'Why was UIDAI created?',options:['To Provide robust technology to eliminate duplicate and fake identities','to provide identity that can be verified and authenticated in an easy, cost-effective way','To make another Identification Document','Both 1 & 2'],answer:3,explanation:'UIDAI was created to provide robust technology to eliminate duplicate/fake identities and provide verifiable identity.'},
+            {id:5,type:'mcq',question:'When was the Aadhaar Enrolment/Update Regulation 2016 published in official gazettee?',options:['28th January, 2009','29th September, 2010','12th July, 2016','12th September 2017'],answer:3,explanation:'The Aadhaar Enrolment/Update Regulation 2016 was published on 12th September 2017.'},
+            {id:6,type:'mcq',question:'What do you mean by Aadhaar Enrolment/Update Process?',options:['The process to collect demographic and biometric information from individuals by the enrolment agencies for the purpose of issuing Aadhaar numbers','Process to collect personal information of the resident to issue Identification Number','Process to collect financial information like PAN number, Bank A/c no. to issue Identification Number','None of the above'],answer:0,explanation:'Aadhaar Enrolment/Update Process involves collecting demographic and biometric information for issuing Aadhaar numbers.'},
+            {id:7,type:'mcq',question:'What is the process of capturing resident data both Demographic and Biometric for generation of Aadhaar called?',options:['Authentication','Enrolment','Identification','Presentation'],answer:1,explanation:'The process of capturing demographic and biometric data is called Enrolment.'},
+            {id:8,type:'mcq',question:'______ is any entity authorised or recognised by the Authority for the purpose of enrolling individuals through Enrolment Agency.',options:['Introducer','Enrolling agency','Agency','Registrar'],answer:3,explanation:'Registrar is the entity authorised by UIDAI for enrolling individuals through Enrolment Agencies.'},
+            {id:9,type:'mcq',question:'______ is any entity engaged by the Registrar for the purpose of enrolling individuals.',options:['Introducer','Enrolment Agency','Supervisor/Operator','Registrar'],answer:1,explanation:'Enrolment Agency is engaged by the Registrar for enrolling individuals.'},
+            {id:10,type:'mcq',question:'The Verifier/Certifier is the personnel appointed by ______ for verification of documents at enrollment centres.',options:['Operator','Introducer','Registrars','Enrolling agency'],answer:2,explanation:'Verifier/Certifier is appointed by Registrars for document verification.'},
+            {id:11,type:'mcq',question:'______ is the place where the Aadhaar Enrolment/Update is conducted by Certified Operator/Supervisor',options:['Enrolment Center','Exam Center','Hospital','School'],answer:0,explanation:'Enrolment Center is where Aadhaar Enrolment/Update is conducted.'},
+            {id:12,type:'mcq',question:'______ is a certified personnel employed by Enrolment Agencies to execute the process of enrolment /update at the enrolment centers',options:['Enrolment Operator','Enrolment Supervisor','Introducer','Both 1 & 2'],answer:1,explanation:'Enrolment Supervisor is the certified personnel who executes enrolment/update processes.'},
+            {id:13,type:'mcq',question:'Who among the following ensures that only trained and certified persons handle the enrolment/update process?',options:['UIDAI','Operator','Supervisor','Enrolment Agency'],answer:3,explanation:'Enrolment Agency ensures only trained and certified persons handle enrolment/update.'},
+            {id:14,type:'mcq',question:'______ is responsible to conduct the Certification exam for the role of Operator/Supervisor',options:['Introducer','Enrolment Agency','Testing and Certification Agency','Registrar'],answer:2,explanation:'Testing and Certification Agency conducts certification exams for Operator/Supervisor roles.'},
+            {id:15,type:'mcq',question:'______ is a person registered with the Registrar and Authority who confirms the identity of a person who does not have any valid POI and POA.',options:['Operator','Introducer','Enrolling agency','Agency'],answer:1,explanation:'Introducer confirms identity for those without valid POI/POA documents.'},
+            {id:16,type:'mcq',question:'Who are applicable to can get the Aadhaar Enrolment/Update done?',options:['Operator','An individual who has resided in India for a period or periods amounting in all to one hundred and eighty-two days (182) or more in the twelve months immediately preceding the date of application.','NRI','None of the above'],answer:1,explanation:'Individuals residing in India for 182+ days in the preceding 12 months are eligible.'},
+            {id:17,type:'mcq',question:'Enrolment Identification Number (EID) is ______ digit number allocated to residents at the time of enrolment.',options:['10','12','15','28'],answer:3,explanation:'EID is a 28-digit number allocated at enrolment.'},
+            {id:18,type:'mcq',question:'Resident is an individual who has resided in India for a period or periods amounting in all to ______ days or more in the twelve months immediately preceding the date of application for Aadhaar Enrolment/Update.',options:['32','61','123','182'],answer:3,explanation:'A resident is defined as someone residing in India for 182+ days in the preceding 12 months.'},
+            {id:19,type:'mcq',question:'Which of the following contact numbers can a resident call for resolutions to their concerns or grievances related to Aadhaar?',options:['1947','2009','140','108'],answer:0,explanation:'Residents can call 1947 for Aadhaar-related concerns and grievances.'},
+            {id:20,type:'mcq',question:'Aadhaar is unique because ______',options:['No two residents will have the same Aadhaar number','A family can get a unique recognized ID','A person can avail two Aadhaar numbers','None of the above'],answer:0,explanation:'Aadhaar is unique as no two residents have the same Aadhaar number.'},
+            {id:21,type:'mcq',question:'Which of the following is NOT a component of enrollment setup?',options:['Computer','Biometric device','Bomb detector','Iris scanner'],answer:2,explanation:'Bomb detector is not a component of Aadhaar enrolment setup.'},
+            {id:22,type:'mcq',question:'Which of the given is true about Aadhaar?',options:['An individual can obtain multiple Aadhaar numbers','Aadhaar collects financial information of residents','Aadhaar can be used as Proof of Citizenship','Aadhaar enables resident\'s identification subject to successful "Authentication"'],answer:3,explanation:'Aadhaar enables identification through successful authentication.'},
+            {id:23,type:'mcq',question:'Aadhaar uses which of the given to uniquely identify the resident?',options:['Name and Address of the resident','Fingerprints','Iris','Both 2 & 3'],answer:3,explanation:'Aadhaar uses fingerprints and iris scans to uniquely identify residents.'},
+            {id:24,type:'mcq',question:'Which of the given is true about Aadhaar?',options:['It is just another card','Will collect and record demographic and biometric information for generation of Aadhaar','Aadhaar will replace all other IDs','Will collect profiling information such as caste, religion, language'],answer:1,explanation:'Aadhaar collects demographic and biometric information for generation of Aadhaar.'},
+            {id:25,type:'mcq',question:'______ is a document to convey the Aadhaar number to a resident.',options:['Aadhaar letter','CIDR','UID','Aadhaar number'],answer:0,explanation:'Aadhaar letter conveys the Aadhaar number to residents.'},
+            {id:26,type:'tf',question:'Aadhaar will be used to prove citizenship.',answer:false,explanation:'Aadhaar is not proof of citizenship; it is proof of identity and residence.'},
+            {id:27,type:'tf',question:'Aadhaar will cover all residents of India who are residing in India for 180 days from the date of Aadhaar enrolment/update',answer:true,explanation:'Aadhaar covers residents residing in India for 180+ days.'},
+            {id:28,type:'tf',question:'The vision of UIDAI is to empower residents of India with a unique identity and a digital platform to authenticate anytime, anywhere.',answer:true,explanation:'This is the core vision of UIDAI.'},
+            {id:29,type:'tf',question:'Aadhaar is a 15-digit number.',answer:false,explanation:'Aadhaar is a 12-digit number, not 15-digit.'},
+            {id:30,type:'mcq',question:'Which person or Entity among the following is eligible to become a registrar?',options:['Any individual','Any Entity under central Govt. Ministry, State Government','Any citizen of India','Any individual capable of running a business'],answer:1,explanation:'Entities under central/state government ministries are eligible to become registrars.'},
+            {id:31,type:'mcq',question:'Which of the following should be avoided/not to be done by the registrar?',options:['Responsible for field level execution, monitoring and audit','Display adequate information about Aadhaar enrolment and update on their websites','Use the information collected during enrolment for any purpose other than Aadhaar Enrolment/Update','Allow UIDAI reasonable access to the premises occupied by it in case required'],answer:2,explanation:'Registrars should not use enrolment information for purposes other than Aadhaar enrolment/update.'},
+            {id:32,type:'mcq',question:'Registrars shall at all times abide by the Code of Conduct as specified in ______ for Aadhaar Enrolment/Update.',options:['Aadhaar Act 2016 and Aadhaar Regulations','GFR Rules','Both I and II','None of the above'],answer:0,explanation:'Registrars must abide by Aadhaar Act 2016 and Aadhaar Regulations.'},
+            {id:33,type:'mcq',question:'Who among the following is responsible for evaluating the applications of agencies and empanel the eligible agencies as enrolling agencies- EA?',options:['Central Ministry','Registrar and UIDAI','Both I and II','UIDAI'],answer:1,explanation:'Registrar and UIDAI evaluate and empanel enrolling agencies.'},
+            {id:34,type:'mcq',question:'What are the basic responsibility of Registrar?',options:['Adherence to Aadhaar Act 2016 and Aadhaar Regulations','Hire/engage Enrolling Agency and monitor its functioning','Ensure that any Enrolment agency and/ or person employed or appointed by them to conduct the enrolment and update operations are certified','All of the above'],answer:3,explanation:'All listed options are responsibilities of the Registrar.'},
+            {id:35,type:'mcq',question:'Which person or Entity among the following is eligible to become a Enrolling Agency?',options:['Any individual fulfilling the condition mentioned in RFE for Enrolment Agency specified by Registrar/UIDA!','Any individual capable of running a business','Any cerfied Operator/Supervisor','Any individual who own a Aadhaar Enrolment/ Update Device'],answer:0,explanation:'Individuals fulfilling RFE conditions specified by Registrar/UIDAI are eligible.'},
+            {id:36,type:'mcq',question:'Which of the following criteria should an individual qualify to be eligible for a supervisor role?',options:['I, II and III','I, III and IV','I, II, III and IV','All the given options'],answer:2,explanation:'Age 18+, 10+2 pass, Aadhaar number, and Supervisor Certificate are required.'},
+            {id:37,type:'mcq',question:'Which of the following should an individual possess before starting his/her role as EA supervisor?',options:['Should possess Basics in Computer Education Certificate','Should be a graduate','Should be comfortable with local language keyboard and transliteration','Should be a prominent person within the given region'],answer:2,explanation:'Supervisors should be comfortable with local language keyboard and transliteration.'},
+            {id:38,type:'mcq',question:'Who among the following is responsible for setting up of the laptop/desktop with Aadhaar client installed and tested at Enrolment Center?',options:['Authority','Registrar','Operator/Super visor','IT technician'],answer:2,explanation:'Operator/Supervisor is responsible for setting up the enrolment client.'},
+            {id:39,type:'mcq',question:'Supervisor must submit his/her "On boarding Form" along with the required documents to the Enrolment Agency, which in turn submits the form to ______ concerned for verification.',options:['Authority\'s Regional Offices','Verification officer','Another supervisor','Registrar Office'],answer:0,explanation:'Onboarding forms are submitted to Authority\'s Regional Offices for verification.'},
+            {id:40,type:'mcq',question:'Who among the following is considered as enrolled user during the operator/supervisor on-boarding?',options:['A user who introduces other residents who cannot produce POI or POA','A user who has filled the enrollment form to get Aadhaar','A user who has appeared at an enrolment centre to get enrolled for Aadhaar','Operator/Supervisor whose biometric verification is successfully completed and stored in the Enrolment Client'],answer:3,explanation:'Operator/Supervisor with successful biometric verification is considered enrolled user.'},
+            {id:41,type:'mcq',question:'In case of introducer-based enrolment, which of the given additional information shall be collected?',options:['Only I','Only II','Both II and III','All the given options'],answer:3,explanation:'Introducer\'s signature, thumb impression, and Aadhaar number are all collected.'},
+            {id:42,type:'mcq',question:'As part of managing the enrolment centre, which of the following should a "Supervisor" do?',options:['"Sign off" every enrolment on Aadhaar client','Use "Find Aadhaar Facility" to ensure fresh residents have never enrolled','Ensure that the Operator provides his/her biometric confirmation after every Aadhaar enrolment/update','All the given options'],answer:3,explanation:'All listed actions are supervisor responsibilities.'},
+            {id:43,type:'mcq',question:'Supervisor also ensures that enrolment stations are synched at least once in every ______.',options:['10 days','15 days','20 days','Month'],answer:0,explanation:'Enrolment stations should be synced at least once every 10 days.'},
+            {id:44,type:'mcq',question:'Which of the following should a supervisor ensure to backup, sync and export data?',options:['I, II and IV','I, III and IV','II, III, IV and V','All the given options'],answer:1,explanation:'Backup twice daily, sync every 10 days, and maintain export register are required.'},
+            {id:45,type:'tf',question:'At the end of the day, supervisor should allow the operator to review the Enrolment packets created by him?',answer:false,explanation:'Supervisors, not operators, should review enrolment packets.'},
+            {id:46,type:'mcq',question:'In case of any error found in the enrolment data entered, which of the following should be done?',options:['Use discretion to fill in the details correctly','A supervisor needs to identify the correct data','Inform the resident to come to the enrolment centre within correction time frame','Go to the resident\'s house and collect the right details'],answer:2,explanation:'Residents should be informed to return within correction timeframe for errors.'},
+            {id:47,type:'mcq',question:'Which of the following actions should a supervisor do after day-end review?',options:['Sign off by giving his/her fingerprint','Send a mail to authority','Send bulk SMSes to the residents enrolled for the day','Ask operator to sign off by giving his/her fingerprint'],answer:0,explanation:'Supervisors should sign off with their fingerprint after day-end review.'},
+            {id:48,type:'mcq',question:'A supervisor monitors and audits the functions at the enrolment centre. How does the audit feedback help the entire team?',options:['Remove the under- performing operators','Cut the pay of the operators whose performance is not up to the benchmark','Identify the areas of improvement of enrolment operations and data quality','Escalate the matters to the Authority'],answer:2,explanation:'Audit feedback helps identify areas for improvement in operations and data quality.'},
+            {id:49,type:'mcq',question:'Who is an operator/supervisor?',options:['A person who handles the functions of an enrolment agency like cleaning, electricity connection ect.','A mediator between the Authority and enrolment agency','An individual employed by an Enrolment Agency to execute enrolment at the enrolment stations','A resident who comes to the enrolment agency to get enrolled for Aadhaar'],answer:2,explanation:'Operator/Supervisor executes enrolment at enrolment stations.'},
+            {id:50,type:'mcq',question:'Which of the following is the eligibility criteria for an individual to work for the role of operator/supervisor?',options:['Person should be between 18 and 21 years of age','Person should be a graduate','Person should be expert in JAVA','Person should have obtained "Operator/ Supervisor Certificate" from a Testing and Certification Agency'],answer:3,explanation:'Operator/Supervisor Certificate from Testing and Certification Agency is required.'}
+        ];
+
+        const qContainer = document.getElementById('questions');
+        let answered = 0, score = 0, total = questions.length;
+        const progressBar = document.getElementById('progressBar');
+        const answeredCount = document.getElementById('answeredCount');
+        const scoreMini = document.getElementById('scoreMini');
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+
+        // Render
+        questions.forEach((q, idx)=>{
+            const card = document.createElement('div');
+            card.className='card mb-4 card-question';
+            card.id='q'+q.id;
+            const body = document.createElement('div');
+            body.className='card-body';
+            let html = `<h6 class="d-flex align-items-start"><span class="question-number">${idx+1}</span> ${escapeHtml(q.question)}</h6>`;
+            if(q.type==='mcq'){
+                q.options.forEach((opt,i)=>{
+                    html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-idx="${i}">
+                        <input class="form-check-input me-3" type="radio" name="q${q.id}" value="${i}">
+                        <span>${escapeHtml(opt)}</span>
+                    </label>`;
+                });
+            } else {
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="true">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="true">True
+                </label>`;
+                html += `<label class="list-group-item label-opt d-flex align-items-center" data-qid="${q.id}" data-val="false">
+                    <input class="form-check-input me-3" type="radio" name="q${q.id}" value="false">False
+                </label>`;
+            }
+            html += `<div class="feedback" id="fb${q.id}" style="display:none"></div>`;
+            body.innerHTML = html;
+            card.appendChild(body);
+            qContainer.appendChild(card);
+        });
+
+        // Event
+        qContainer.addEventListener('change',(e)=>{
+            if(e.target.type!=='radio') return;
+            const qid = parseInt(e.target.closest('label').dataset.qid,10);
+            handleAnswer(qid);
+        });
+
+        function handleAnswer(qid){
+            const q = questions.find(x=>x.id===qid);
+            const fb = document.getElementById('fb'+q.id);
+            if(fb.getAttribute('data-answered')==='true') return;
+
+            const sel = document.querySelector(`input[name='q${q.id}']:checked`);
+            if(!sel) return;
+            let userText='', correct=false;
+            if(q.type==='mcq'){ const idx=parseInt(sel.value,10); userText=q.options[idx]; correct=(idx===q.answer); }
+            else { const val=(sel.value==='true'); userText=val?'True':'False'; correct=(val===q.answer); }
+
+            fb.style.display='block';
+            fb.innerHTML=`<strong class="text-${correct?'success':'danger'}">${correct?'<i class="fas fa-check-circle me-1"></i> Correct':'<i class="fas fa-times-circle me-1"></i> Incorrect'}</strong>
+            <div class="mt-1">Your answer: <strong>${escapeHtml(userText)}</strong></div>
+            <div>Correct answer: <strong>${escapeHtml(q.type==='mcq'?q.options[q.answer]:(q.answer?'True':'False'))}</strong></div>
+            <div class="mt-2">${escapeHtml(q.explanation)}</div>`;
+            fb.setAttribute('data-answered','true');
+
+            document.querySelectorAll(`#q${q.id} .label-opt`).forEach(l=>l.classList.add('disabled'));
+            if(correct) document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+            else {
+                document.querySelector(`#q${q.id} label[data-idx="${q.answer}"]`)?.classList.add('correct');
+                sel.closest('label').classList.add('wrong');
+            }
+
+            saved[q.id]=sel.value;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+
+            answered++; if(correct) score++; updateProgress();
+        }
+
+        function updateProgress(){
+            const pct=Math.round((answered/total)*100);
+            progressBar.style.width=pct+'%';
+            answeredCount.textContent=`Answered: ${answered}/${total}`;
+            scoreMini.textContent=`Score: ${score}`;
+        }
+
+        function finishTest(){
+            clearInterval(timerInterval);
+            const final=document.getElementById('finalResult');
+            final.innerHTML=`<div class="card mt-4">
+                <div class="card-body text-center">
+                    <h4 class="card-title mb-3">Test Completed!</h4>
+                    <div class="display-4 fw-bold text-primary mb-2">${score}/${total}</div>
+                    <p class="text-muted mb-3">Percentage: ${(score/total*100).toFixed(2)}%</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button class="btn btn-primary" onclick="location.reload()">
+                            <i class="fas fa-redo-alt me-2"></i> Try Again
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+                            <i class="fas fa-arrow-up me-2"></i> Back to Top
+                        </button>
+                    </div>
+                </div>
+            </div>`;
+            final.scrollIntoView({behavior:'smooth'});
+        }
+
+        function autoSubmit(){
+            alert('⏰ Time is up — submitting your test.');
+            finishTest();
+        }
+
+        document.getElementById('finishBtn').addEventListener('click', finishTest);
+        document.getElementById('resetBtn').addEventListener('click', ()=>{
+            if(confirm('Reset all answers?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('clearSaved').addEventListener('click', ()=>{
+            if(confirm('Clear saved data?')){ localStorage.removeItem(STORAGE_KEY); localStorage.removeItem(TIME_KEY); location.reload(); }
+        });
+        document.getElementById('topBtn').addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+
+        function escapeHtml(t){return t?.toString().replace(/[&<>]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[m]))||'';}
+    </script>
+</body>
+</html>
