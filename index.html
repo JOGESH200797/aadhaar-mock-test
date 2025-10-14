@@ -810,7 +810,7 @@
     card.className = 'test-card';
     
     const fileName = `mocktest${i}.html`;
-    const isAvailable = i <= 4; // First 4 tests are available
+    const isAvailable = i <= 9; // First 4 tests are available
     
     card.innerHTML = `
       <div class="test-card-header">
@@ -836,7 +836,7 @@
           </a>
         </div>
       </div>
-      ${i <= 4 ? '<div class="test-badge">Available</div>' : ''}
+      ${i <= 9 ? '<div class="test-badge">Available</div>' : ''}
     `;
     
     mockLinksContainer.appendChild(card);
@@ -858,3 +858,4 @@
 </script>
 </body>
 </html>
+
